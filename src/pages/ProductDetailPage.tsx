@@ -204,7 +204,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
 
           {/* Quantity Selector & Purchase CTAs */}
           <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
               {/* Stepper */}
               <div className="flex items-center border border-[#EADBCE] bg-[#FAF7F2] rounded-xs h-12">
                 <button
@@ -229,17 +229,17 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
               {/* Primary Add to Cart Button */}
               <button
                 onClick={() => addToCart(product, quantity)}
-                className="flex-1 h-12 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="order-3 h-12 w-full bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer sm:order-none sm:w-auto sm:flex-1"
               >
                 <ShoppingBag className="w-4 h-4" />
-                <span>Add to Shopping Bag</span>
+                <span className="whitespace-nowrap">Add to Shopping Bag</span>
               </button>
 
               {/* Wishlist Toggle Button */}
               <button
                 onClick={() => toggleWishlist(product)}
                 aria-label="Save to Wishlist"
-                className={`w-12 h-12 rounded-xs border flex items-center justify-center transition-colors cursor-pointer ${
+                className={`order-2 ml-auto w-12 h-12 rounded-xs border flex items-center justify-center transition-colors cursor-pointer sm:order-none sm:ml-0 ${
                   isFavorited
                     ? 'bg-[#4A1525] border-[#4A1525] text-[#FAF7F2]'
                     : 'border-[#EADBCE] bg-[#FAF7F2] text-[#2A0814] hover:border-[#C49A45]'
@@ -250,9 +250,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
             </div>
 
             {/* Quick buy / COD note */}
-            <div className="flex items-center justify-between text-[11px] text-[#4A1525]/70 pt-1">
-              <span>COD Available · Free Express Delivery</span>
-              <span className="text-emerald-800 font-medium">In Stock ({product.stockCount} left)</span>
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[11px] text-[#4A1525]/70 pt-1">
+              <span className="min-w-0">COD Available · Free Express Delivery</span>
+              <span className="min-w-0 text-emerald-800 font-medium">In Stock ({product.stockCount} left)</span>
             </div>
           </div>
 

@@ -173,11 +173,13 @@ export const ShopPage: React.FC = () => {
       </div>
 
       {/* Active Count & Feedback */}
-      <div className="flex items-center justify-between text-xs text-[#4A1525]/70 font-mono">
-        <span>
+      <div className="flex flex-col gap-1 text-xs text-[#4A1525]/70 font-mono sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <span className="min-w-0">
           Showing <strong className="text-[#2A0814]">{filteredProducts.length}</strong> handcrafted pieces
         </span>
-        <span className="text-[#C49A45]">All pieces include lifetime plating care support</span>
+        <span className="min-w-0 break-words text-[#C49A45] sm:text-right">
+          All pieces include lifetime plating care support
+        </span>
       </div>
 
       {/* Product Grid (3-4 columns balanced) */}
