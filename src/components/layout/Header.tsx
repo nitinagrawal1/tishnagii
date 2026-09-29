@@ -50,13 +50,13 @@ export const Header: React.FC = () => {
 
       {/* 2. Strict One-Row Three-Zone Top Bar Contract */}
       <header className="sticky top-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#EADBCE] transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           
           {/* Zone 1: Single text element wordmark in display face */}
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-[#2A0814] hover:text-[#C49A45] transition-colors -ml-2"
+              className="lg:hidden -ml-1.5 p-1.5 text-[#2A0814] transition-colors hover:text-[#C49A45] sm:-ml-2 sm:p-2"
               aria-label="Open navigation menu"
             >
               <Menu className="w-5 h-5" />
@@ -67,12 +67,12 @@ export const Header: React.FC = () => {
                 e.preventDefault();
                 navigateTo('home');
               }}
-              className="group flex flex-col items-start text-left focus:outline-none"
+              className="group flex min-w-0 flex-col items-start text-left focus:outline-none"
             >
-              <span className="font-serif text-2xl sm:text-3xl font-medium tracking-[0.22em] text-[#2A0814] group-hover:text-[#4A1525] transition-colors leading-tight">
+              <span className="whitespace-nowrap font-serif text-xl font-medium leading-tight tracking-[0.12em] text-[#2A0814] transition-colors group-hover:text-[#4A1525] sm:text-3xl sm:tracking-[0.22em]">
                 TISHNAGII
               </span>
-              <span className="text-[10px] tracking-[0.3em] text-[#C49A45] -mt-0.5 font-light">
+              <span className="-mt-0.5 whitespace-nowrap text-[8px] font-light tracking-[0.15em] text-[#C49A45] sm:text-[10px] sm:tracking-[0.3em]">
                 तिश्नगी · ARTISANAL LUXURY
               </span>
             </a>
@@ -102,12 +102,12 @@ export const Header: React.FC = () => {
           </nav>
 
           {/* Zone 3: 1-2 primary actions (Search, Wishlist, Cart) */}
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex shrink-0 items-center gap-0 sm:gap-2">
             {/* Search Affordance */}
             <button
               onClick={() => setIsSearchOpen(true)}
               aria-label="Search jewellery collection"
-              className="p-2 text-[#2A0814] hover:text-[#C49A45] transition-colors rounded-full hover:bg-[#F4EFEA]"
+              className="rounded-full p-1.5 text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45] sm:p-2"
             >
               <Search className="w-5 h-5" />
             </button>
@@ -116,7 +116,7 @@ export const Header: React.FC = () => {
             <button
               onClick={() => navigateTo('wishlist')}
               aria-label="View saved wishlist"
-              className="relative p-2 text-[#2A0814] hover:text-[#C49A45] transition-colors rounded-full hover:bg-[#F4EFEA]"
+              className="relative rounded-full p-1.5 text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45] sm:p-2"
             >
               <Heart className="w-5 h-5" />
               {wishlist.length > 0 && (
@@ -130,7 +130,7 @@ export const Header: React.FC = () => {
             <button
               onClick={() => setIsCartDrawerOpen(true)}
               aria-label="View shopping bag"
-              className="relative p-2 text-[#2A0814] hover:text-[#C49A45] transition-colors rounded-full hover:bg-[#F4EFEA] flex items-center"
+              className="relative flex items-center rounded-full p-1.5 text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45] sm:p-2"
             >
               <ShoppingBag className="w-5 h-5" />
               {cartCount > 0 && (

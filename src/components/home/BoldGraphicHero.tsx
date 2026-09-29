@@ -1,7 +1,7 @@
 import React from 'react';
 import { useShop } from '../../context/ShopContext';
 import { ASSETS } from '../../data/mockData';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export const BoldGraphicHero: React.FC = () => {
   const { navigateTo } = useShop();
@@ -21,56 +21,42 @@ export const BoldGraphicHero: React.FC = () => {
 
   return (
     <section className="w-full px-3 sm:px-6 md:px-8 pt-2 sm:pt-4 pb-4">
-      {/* Massive Rounded Hero Card */}
-      <div className="relative rounded-[26px] sm:rounded-[36px] overflow-hidden min-h-[580px] sm:min-h-[660px] md:min-h-[720px] lg:min-h-[780px] flex flex-col justify-between p-6 sm:p-10 md:p-14 bg-[#18050D] shadow-2xl select-none">
-        
-        {/* Full-bleed Candid Background Image */}
-        <img
-          src={ASSETS.heroCandidKundan}
-          alt="Artisanal 22K Kundan choker necklace being fastened in an intimate moment"
-          referrerPolicy="no-referrer"
-          className="absolute inset-0 w-full h-full object-cover object-[center_35%] select-none scale-100 hover:scale-[1.01] transition-transform duration-1000 ease-out"
-        />
+      <div className="w-full rounded-[26px] border border-[#EADBCE] bg-[#FAF7F2] p-4 sm:rounded-[36px] sm:p-7 md:p-10 lg:p-12 xl:p-14">
+        <div className="grid min-w-0 grid-cols-1 items-start gap-6 pb-8 sm:gap-8 sm:pb-10 md:pb-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)] lg:items-center lg:gap-12 xl:gap-16">
+          <h1 className="font-serif text-3xl font-medium leading-[1.02] text-[#2A0814] sm:text-4xl md:text-5xl xl:text-6xl 2xl:text-7xl">
+            <span className="block">Real Heritage.</span>
+            <span className="block">Antique 22K Finish.</span>
+            <span className="block">Made for Today.</span>
+          </h1>
 
-        {/* Cinematic Film Vignette & Shadow Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/60 pointer-events-none" />
-
-        {/* UPPER ROW: 3-Line Punchy Statement (Left) & Narrative + CTA Pill (Right) */}
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2 sm:pt-4">
-          
-          {/* Left: Punchy 3-line statement */}
-          <div className="lg:col-span-7">
-            <h1 className="font-sans font-black text-3xl sm:text-4xl md:text-5xl lg:text-[58px] text-white leading-[1.08] tracking-tight drop-shadow-md">
-              Real Heritage.<br />
-              Antique 22K Finish.<br />
-              Zero Locker Fear.
-            </h1>
-          </div>
-
-          {/* Right: Narrative Story & Pill Action Button */}
-          <div className="lg:col-span-5 flex flex-col items-start lg:items-start space-y-4 pt-1 sm:pt-2">
-            <p className="text-xs sm:text-sm md:text-[15px] text-white/90 font-normal leading-relaxed max-w-sm drop-shadow-sm">
-              Tishnagii pairs centuries-old Jaipur karigari with hypoallergenic brass matrices and 22-karat antique micron gold to liberate royal adornment for the modern woman.
+          <div className="flex min-w-0 flex-col items-start gap-5 sm:gap-6 lg:pt-2">
+            <p className="max-w-md text-sm leading-7 text-[#59463F] sm:text-base md:text-lg md:leading-8">
+              Centuries-old Jaipur karigari meets hypoallergenic brass and 22-karat antique micron gold for modern adornment.
             </p>
 
             <button
               onClick={() => navigateTo('shop')}
-              className="mt-2 inline-flex items-center gap-2 bg-[#C84414] hover:bg-[#D94F1D] text-white font-bold text-xs sm:text-sm uppercase tracking-wider py-3.5 px-8 rounded-full shadow-xl hover:scale-105 transition-all cursor-pointer group"
+              className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#2A0814] px-7 py-3 text-xs font-semibold uppercase tracking-wider text-[#FAF7F2] transition-colors hover:bg-[#380E1C] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C49A45] sm:text-sm group"
             >
               <span>Shop Tishnagii</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
-
         </div>
 
-        {/* LOWER ROW: Colossal Bold Graphic Wordmark spanning bottom edge */}
-        <div className="relative z-10 w-full text-center overflow-hidden leading-none pt-12 pb-0 -mb-2 sm:-mb-5 md:-mb-7 pointer-events-none select-none">
-          <span className="font-sans font-black text-[17vw] sm:text-[16vw] md:text-[15.5vw] leading-[0.72] tracking-tighter text-white drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)] block lowercase">
-            tishnagii
-          </span>
+        <div className="relative w-full overflow-hidden rounded-xl sm:rounded-2xl">
+          <img
+            src={ASSETS.heroCandidKundan}
+            alt="Artisanal 22K Kundan choker necklace being fastened in an intimate moment"
+            referrerPolicy="no-referrer"
+            className="block h-auto w-full select-none"
+          />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center px-1 pb-2 sm:pb-3 md:pb-8">
+            <span className="block whitespace-nowrap font-sans text-[clamp(2rem,14.5vw,14rem)] font-black leading-none text-white drop-shadow-md">
+              TISHNAGII
+            </span>
+          </div>
         </div>
-
       </div>
 
       {/* 3. Infinite Smooth Marquee Ticker running right below the card */}
