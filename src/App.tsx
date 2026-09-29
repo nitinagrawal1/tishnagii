@@ -93,7 +93,7 @@ const AppContent: React.FC = () => {
       <PreFooterCTA />
 
       {/* Comprehensive Footer */}
-      <Footer />
+      {currentPage !== 'contact' && <Footer />}
 
       {/* Slide-out Cart Drawer */}
       <CartDrawer onOpenCheckout={() => setIsCheckoutOpen(true)} />

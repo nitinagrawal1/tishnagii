@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
 import { Check, CheckCircle2 } from 'lucide-react';
 
@@ -14,38 +14,6 @@ export const ContactPage: React.FC = () => {
   const [acceptPrivacy, setAcceptPrivacy] = useState(true);
   const [subscribeNewsletter, setSubscribeNewsletter] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
-  // Live Local Ticking Clock for Jaipur Atelier & User
-  const [timeString, setTimeString] = useState({ time: '12:00:00', meridiem: 'PM' });
-
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      // Format time in Asia/Kolkata (Jaipur Atelier) or local time
-      const timeFormatter = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'Asia/Kolkata',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true,
-      });
-
-      const parts = timeFormatter.formatToParts(now);
-      const hour = parts.find((p) => p.type === 'hour')?.value || '12';
-      const minute = parts.find((p) => p.type === 'minute')?.value || '00';
-      const second = parts.find((p) => p.type === 'second')?.value || '00';
-      const dayPeriod = parts.find((p) => p.type === 'dayPeriod')?.value || 'PM';
-
-      setTimeString({
-        time: `${hour}:${minute}:${second}`,
-        meridiem: dayPeriod.toUpperCase(),
-      });
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,12 +37,12 @@ export const ContactPage: React.FC = () => {
       <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#380E1C]/40 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 left-1/4 w-[500px] h-[500px] bg-[#C49A45]/5 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Giant Rotated "US" on Far-Right Margin (Matching Reference Design) */}
+      {/* Vertical brand wordmark on the far-right margin */}
       <div 
         aria-hidden="true" 
         className="hidden lg:block absolute right-10 xl:right-16 top-1/2 -translate-y-1/2 select-none pointer-events-none font-serif text-8xl xl:text-9xl text-[#FAF7F2]/20 font-light tracking-widest rotate-90"
       >
-        US
+        TISHNAGII
       </div>
 
       {/* MAIN CONTENT AREA */}
@@ -259,49 +227,6 @@ export const ContactPage: React.FC = () => {
           </form>
         )}
       </div>
-
-      {/* FOOTER BAR: LIVE TICKING CLOCK & LEGAL LINKS */}
-      <footer className="mt-16 sm:mt-24 pt-8 border-t border-white/10 flex flex-col md:flex-row md:items-end justify-between gap-8 relative z-10">
-        
-        {/* Bottom Left: Live Real-Time Atelier Clock (Matching Reference Design) */}
-        <div>
-          <span className="text-[11px] sm:text-xs uppercase tracking-widest text-[#FAF7F2]/60 font-light block mb-1">
-            (Jaipur Atelier Time · IST)
-          </span>
-          <div className="flex items-baseline gap-3 sm:gap-4 font-serif text-5xl sm:text-6xl md:text-7xl lg:text-[76px] font-light text-[#FAF7F2] tracking-tight leading-none">
-            <span>{timeString.time}</span>
-            <span className="text-3xl sm:text-4xl md:text-5xl text-[#FAF7F2]/80">
-              {timeString.meridiem}
-            </span>
-          </div>
-        </div>
-
-        {/* Bottom Right: Footer Meta Links */}
-        <div className="flex flex-wrap items-center gap-6 text-xs text-[#FAF7F2]/70 font-light">
-          <button
-            onClick={() => navigateTo('privacy')}
-            className="hover:text-[#D4AE58] transition-colors cursor-pointer"
-          >
-            Privacy Policy
-          </button>
-          <button
-            onClick={() => navigateTo('terms')}
-            className="hover:text-[#D4AE58] transition-colors cursor-pointer"
-          >
-            Terms & Conditions
-          </button>
-          <button
-            onClick={() => navigateTo('shipping')}
-            className="hover:text-[#D4AE58] transition-colors cursor-pointer"
-          >
-            Shipping Policy
-          </button>
-          <span className="text-[#FAF7F2]/40">
-            2026 © TISHNAGII Haute Jewellery
-          </span>
-        </div>
-
-      </footer>
 
     </div>
   );
