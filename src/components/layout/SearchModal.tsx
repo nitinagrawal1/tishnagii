@@ -196,7 +196,7 @@ export const SearchModal: React.FC = () => {
                         setIsSearchOpen(false);
                         navigateTo('shop', undefined, c.id);
                       }}
-                      className="py-2.5 flex items-center justify-between hover:bg-[#F4EFEA] px-2 rounded-xs cursor-pointer"
+                      className="flex items-start justify-between gap-2 rounded-xs px-2 py-2.5 hover:bg-[#F4EFEA] cursor-pointer"
                     >
                       <span className="text-xs font-medium text-[#2A0814]">{c.name}</span>
                       <ArrowRight className="w-3.5 h-3.5 text-[#C49A45]" />
@@ -223,10 +223,10 @@ export const SearchModal: React.FC = () => {
                       }}
                       className="py-2.5 flex items-center justify-between hover:bg-[#F4EFEA] px-2 rounded-xs cursor-pointer"
                     >
-                      <span className="text-xs font-serif text-[#2A0814] line-clamp-1">
+                      <span className="min-w-0 flex-1 break-words text-xs font-serif text-[#2A0814]">
                         {b.title}
                       </span>
-                      <span className="text-[10px] text-[#4A1525]/60 whitespace-nowrap ml-2">
+                      <span className="shrink-0 whitespace-nowrap text-[10px] text-[#4A1525]/60">
                         {b.readTime}
                       </span>
                     </div>

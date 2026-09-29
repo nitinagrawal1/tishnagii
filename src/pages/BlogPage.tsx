@@ -78,11 +78,11 @@ export const BlogPage: React.FC = () => {
                   <span>{post.readTime}</span>
                 </div>
 
-                <h2 className="font-serif text-xl font-medium text-[#2A0814] group-hover:text-[#4A1525] line-clamp-2 leading-snug">
+                <h2 className="font-serif text-xl font-medium text-[#2A0814] group-hover:text-[#4A1525] break-words leading-snug">
                   {post.title}
                 </h2>
 
-                <p className="text-xs text-[#4A1525]/75 mt-2 line-clamp-3 leading-relaxed font-light">
+                <p className="text-xs text-[#4A1525]/75 mt-2 break-words leading-relaxed font-light">
                   {post.excerpt}
                 </p>
               </div>

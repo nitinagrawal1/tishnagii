@@ -102,14 +102,14 @@ ${BLOG_POSTS.map(
           </h2>
           <ul className="space-y-2 text-xs">
             {PRODUCTS.map((prod) => (
-              <li key={prod.id} className="flex items-center justify-between">
+              <li key={prod.id} className="flex min-w-0 items-start justify-between gap-2">
                 <button
                   onClick={() => navigateTo('product-detail', prod.slug)}
-                  className="text-[#2A0814] hover:text-[#C49A45] font-medium text-left truncate max-w-[200px]"
+                  className="min-w-0 flex-1 break-words text-left font-medium text-[#2A0814] hover:text-[#C49A45]"
                 >
                   {prod.name}
                 </button>
-                <span className="text-[#4A1525]/50 font-mono">₹{prod.price}</span>
+                <span className="shrink-0 font-mono text-[#4A1525]/50">₹{prod.price}</span>
               </li>
             ))}
           </ul>
@@ -143,14 +143,14 @@ ${BLOG_POSTS.map(
           </h2>
           <ul className="space-y-2 text-xs">
             {BLOG_POSTS.map((b) => (
-              <li key={b.id} className="flex items-center justify-between">
+              <li key={b.id} className="flex min-w-0 items-start justify-between gap-2">
                 <button
                   onClick={() => navigateTo('blog-detail', b.slug)}
-                  className="text-[#2A0814] hover:text-[#C49A45] font-medium truncate max-w-[220px]"
+                  className="min-w-0 flex-1 break-words text-left font-medium text-[#2A0814] hover:text-[#C49A45]"
                 >
                   {b.title}
                 </button>
-                <span className="text-[#4A1525]/50 font-mono">{b.readTime}</span>
+                <span className="shrink-0 font-mono text-[#4A1525]/50">{b.readTime}</span>
               </li>
             ))}
           </ul>

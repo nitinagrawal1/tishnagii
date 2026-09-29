@@ -112,13 +112,13 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
                     referrerPolicy="no-referrer"
                     className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xs border border-[#EADBCE] shrink-0 bg-[#F4EFEA]"
                   />
-                  <div className="space-y-1">
+                  <div className="min-w-0 space-y-1">
                     <span className="text-[10px] uppercase tracking-wider text-[#C49A45] font-semibold">
                       {product.categoryLabel}
                     </span>
                     <h3
                       onClick={() => navigateTo('product-detail', product.slug)}
-                      className="font-serif text-base sm:text-lg font-medium text-[#2A0814] hover:text-[#4A1525] cursor-pointer line-clamp-1"
+                      className="break-words font-serif text-base sm:text-lg font-medium text-[#2A0814] hover:text-[#4A1525] cursor-pointer"
                     >
                       {product.name}
                     </h3>

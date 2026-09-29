@@ -55,7 +55,7 @@ export const HomePage: React.FC = () => {
                 />
               </div>
               <div className="p-3 text-center">
-                <h3 className="font-serif text-sm font-medium text-[#2A0814] group-hover:text-[#4A1525] line-clamp-1">
+                <h3 className="font-serif text-sm font-medium text-[#2A0814] group-hover:text-[#4A1525] break-words">
                   {cat.name}
                 </h3>
                 <span className="text-[10px] text-[#4A1525]/60 mt-0.5 block font-mono tabular-nums">
@@ -242,7 +242,7 @@ export const HomePage: React.FC = () => {
               <span className="font-serif font-bold text-xl sm:text-2xl tracking-normal text-white">
                 tishnagii
               </span>
-              <div className="absolute bottom-6 left-6 origin-bottom-left -rotate-90">
+              <div className="absolute bottom-6 left-16 origin-bottom-left -rotate-90 sm:left-18 lg:bottom-4 lg:left-20">
                 <p className="font-sans font-bold text-3xl sm:text-4xl lg:text-[40px] leading-[0.88] tracking-tight text-white whitespace-nowrap">
                   Real<br />feedback.
                 </p>
@@ -260,7 +260,7 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* ROW 1: Card 3 - White Quote Card 1 (Amelia) */}
-            <div className="bg-white text-[#1C1819] rounded-[20px] p-5 sm:p-6 flex flex-col justify-start aspect-[3/4] shadow-sm">
+            <div className="bg-white text-[#1C1819] rounded-[20px] p-5 sm:p-6 flex flex-col justify-start shadow-sm">
               <h3 className="font-sans font-bold text-base sm:text-lg text-black leading-tight">
                 Amelia<br />
                 <span className="text-xs sm:text-sm font-semibold text-black/70">(Destination Wedding)</span>
@@ -282,7 +282,7 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* ROW 1: Card 5 - White Quote Card 2 (Hamna) */}
-            <div className="bg-white text-[#1C1819] rounded-[20px] p-5 sm:p-6 flex flex-col justify-start aspect-[3/4] shadow-sm overflow-hidden">
+            <div className="bg-white text-[#1C1819] rounded-[20px] p-5 sm:p-6 flex flex-col justify-start shadow-sm">
               <h3 className="font-sans font-bold text-base sm:text-lg text-black leading-tight">
                 Hamna<br />
                 <span className="text-xs sm:text-sm font-semibold text-black/70">(Sangeet Night)</span>
@@ -304,7 +304,7 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* ROW 2: Card 7 - White Quote Card 3 (Dior) */}
-            <div className="bg-white text-[#1C1819] rounded-[20px] p-5 sm:p-6 flex flex-col justify-start aspect-[3/4] shadow-sm">
+            <div className="bg-white text-[#1C1819] rounded-[20px] p-5 sm:p-6 flex flex-col justify-start shadow-sm">
               <h3 className="font-sans font-bold text-base sm:text-lg text-black leading-tight">
                 Dior<br />
                 <span className="text-xs sm:text-sm font-semibold text-black/70">(Jaipur Heritage)</span>
@@ -345,7 +345,7 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* ROW 2: Card 9 - White Quote Card 4 (Sylo) */}
-            <div className="bg-white text-[#1C1819] rounded-[20px] p-5 sm:p-6 flex flex-col justify-start aspect-[3/4] shadow-sm overflow-hidden">
+            <div className="bg-white text-[#1C1819] rounded-[20px] p-5 sm:p-6 flex flex-col justify-start shadow-sm">
               <h3 className="font-sans font-bold text-base sm:text-lg text-black leading-tight">
                 Sylo<br />
                 <span className="text-xs sm:text-sm font-semibold text-black/70">(Royal Bride)</span>
@@ -441,7 +441,7 @@ export const HomePage: React.FC = () => {
                   <span className="text-[11px] sm:text-xs uppercase tracking-[0.18em] text-[#C49A45] font-semibold block">
                     {post.shortCategory || post.category}
                   </span>
-                  <h4 className="font-serif text-base sm:text-lg text-[#2A0814] font-normal leading-snug group-hover:text-[#4A1525] transition-colors line-clamp-2">
+                  <h4 className="font-serif text-base sm:text-lg text-[#2A0814] font-normal leading-snug group-hover:text-[#4A1525] transition-colors break-words">
                     {post.title}
                   </h4>
                   <span className="text-xs text-[#4A1525]/60 font-light block pt-1">

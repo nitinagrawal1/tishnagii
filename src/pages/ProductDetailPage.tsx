@@ -69,7 +69,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
       {/* Breadcrumb Navigation (Unboxed text with /) */}
-      <nav className="flex items-center gap-2 text-xs text-[#4A1525]/60 font-medium">
+      <nav className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#4A1525]/60 font-medium">
         <button
           onClick={() => navigateTo('home')}
           className="hover:text-[#2A0814] transition-colors"
@@ -91,7 +91,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
           {product.categoryLabel}
         </button>
         <span aria-hidden="true">/</span>
-        <span className="text-[#2A0814] truncate max-w-xs">{product.name}</span>
+        <span className="min-w-0 max-w-full break-words text-[#2A0814]">{product.name}</span>
       </nav>
 
       {/* Main Contiguous Purchase Module & Gallery (Desktop: 2 Columns) */}
@@ -537,15 +537,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
 
       {/* Sticky Bottom Buy Bar on Mobile (Ecommerce Guideline Compliance) */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-[#FAF7F2]/95 backdrop-blur-md border-t border-[#EADBCE] p-3 flex items-center justify-between gap-3 shadow-lg">
-        <div className="flex flex-col">
-          <span className="text-[11px] text-[#4A1525]/70 line-clamp-1">{product.name}</span>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="break-words text-[11px] leading-tight text-[#4A1525]/70">{product.name}</span>
           <span className="font-mono text-sm font-bold text-[#2A0814] tabular-nums">
             ₹{product.price.toLocaleString('en-IN')}
           </span>
         </div>
         <button
           onClick={() => addToCart(product, 1)}
-          className="py-2.5 px-6 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-wider font-semibold rounded-xs transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+          className="shrink-0 py-2.5 px-6 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-wider font-semibold rounded-xs transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
         >
           <ShoppingBag className="w-3.5 h-3.5" />
           <span>Add to Bag</span>

@@ -115,7 +115,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Product Title */}
           <h3
             onClick={() => navigateTo('product-detail', product.slug)}
-            className="font-serif text-base text-[#1C1819] hover:text-[#4A1525] font-medium transition-colors cursor-pointer line-clamp-1 leading-snug"
+            className="font-serif text-base text-[#1C1819] hover:text-[#4A1525] font-medium transition-colors cursor-pointer break-words leading-snug"
           >
             {product.name}
           </h3>

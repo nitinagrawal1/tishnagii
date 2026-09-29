@@ -131,20 +131,20 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
                 />
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
-                    <div className="flex justify-between items-start">
+                    <div className="flex items-start justify-between gap-2">
                       <h4
                         onClick={() => {
                           setIsCartDrawerOpen(false);
                           navigateTo('product-detail', product.slug);
                         }}
-                        className="text-xs font-serif font-medium text-[#2A0814] hover:text-[#C49A45] line-clamp-1 cursor-pointer"
+                        className="min-w-0 flex-1 break-words text-xs font-serif font-medium text-[#2A0814] hover:text-[#C49A45] cursor-pointer"
                       >
                         {product.name}
                       </h4>
                       <button
                         onClick={() => removeFromCart(product.id)}
                         aria-label="Remove item"
-                        className="text-[#4A1525]/40 hover:text-red-700 p-1 transition-colors cursor-pointer"
+                        className="shrink-0 p-1 text-[#4A1525]/40 transition-colors hover:text-red-700 cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

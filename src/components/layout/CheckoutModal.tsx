@@ -420,9 +420,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                   <span className="text-[#4A1525]/70">Order Reference:</span>
                   <span className="font-bold text-[#2A0814]">{orderId}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-wrap justify-between gap-x-2">
                   <span className="text-[#4A1525]/70">Delivery Address:</span>
-                  <span className="text-[#2A0814] text-right truncate max-w-[220px]">
+                  <span className="min-w-0 max-w-full break-words text-right text-[#2A0814]">
                     {formData.address}, {formData.city} - {formData.pinCode}
                   </span>
                 </div>
