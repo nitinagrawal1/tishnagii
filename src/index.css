@@ -59,3 +59,7 @@
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+* {
+  text-align: justify !important;
+}

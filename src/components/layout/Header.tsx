@@ -155,10 +155,18 @@ export const Header: React.FC = () => {
           <div className="relative w-full max-w-xs bg-[#FAF7F2] h-full shadow-2xl flex flex-col justify-between p-6 z-10 overflow-y-auto">
             <div>
               <div className="flex items-center justify-between pb-6 border-b border-[#EADBCE]">
-                <div>
+                <a
+                  href="/"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    navigateTo('home');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="block"
+                >
                   <span className="font-serif text-2xl tracking-[0.2em] text-[#2A0814]">TISHNAGII</span>
                   <div className="text-[10px] tracking-widest text-[#C49A45]">तिश्नगी</div>
-                </div>
+                </a>
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="p-1.5 text-[#2A0814] hover:text-[#C49A45]"
