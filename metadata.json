@@ -1,0 +1,6 @@
+{
+  "name": "TISHNAGII (तिश्नगी) - Artisanal Artificial Jewellery",
+  "description": "Discover handcrafted luxury artificial jewellery by TISHNAGII. Heritage Kundan, Polki, temple jewellery, and modern bridal statements crafted with timeless elegance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,26 @@
+# TISHNAGII (तिश्नगी) - Artisanal Artificial Jewellery
+# Robots.txt for Search Engine Crawlers
+
+User-agent: *
+Allow: /
+Allow: /shop
+Allow: /categories
+Allow: /product/
+Allow: /about
+Allow: /blog
+Allow: /blog/
+Allow: /contact
+Allow: /faq
+Allow: /shipping
+Allow: /returns
+Allow: /privacy
+Allow: /terms
+Allow: /sitemap
+
+# Disallow checkout and private cart states from crawler indexing
+Disallow: /cart
+Disallow: /checkout
+Disallow: /wishlist
+
+# Sitemap location
+Sitemap: https://tishnagii.com/sitemap.xml
