@@ -2,22 +2,22 @@ import { Product, CategoryItem, BlogPost, FAQItem } from '../types';
 
 // Curated jewellery asset paths
 export const ASSETS = {
-  heroCampaign: '/src/assets/images/hero_jewellery_campaign_1790671876902.jpg',
-  productKundanNecklace: '/src/assets/images/product_kundan_necklace_1790671897532.jpg',
-  productTempleJhumkas: '/src/assets/images/product_temple_jhumkas_1790671913793.jpg',
-  productBridalChoker: '/src/assets/images/product_bridal_choker_1790671925581.jpg',
-  artisanCraftsmanship: '/src/assets/images/artisan_craftsmanship_1790671943082.jpg',
-  goldTempleJhumkas: '/src/assets/images/gold_temple_jhumkas_1790681948885.jpg',
-  goldPendantVelvet: '/src/assets/images/gold_pendant_velvet_1790681962364.jpg',
-  goldPendantTravertine: '/src/assets/images/gold_pendant_travertine_1790681974714.jpg',
-  oxidisedSilverPeacock: '/src/assets/images/oxidised_silver_peacock_1790681986973.jpg',
-  patronSangeet: '/src/assets/images/patron_sangeet_portrait_1790686748089.jpg',
-  patronTempleJhumka: '/src/assets/images/patron_temple_jhumka_1790686765037.jpg',
-  patronEmerald: '/src/assets/images/patron_emerald_necklace_1790686783947.jpg',
-  patronFestiveKadas: '/src/assets/images/patron_kadas_festive_1790686800233.jpg',
-  askAwayEditorial: '/src/assets/images/ask_away_editorial_1790687141855.jpg',
-  banquetCelebrationTable: '/src/assets/images/banquet_celebration_table_1790687483273.jpg',
-  heroCandidKundan: '/src/assets/images/hero_candid_kundan_1790687964650.jpg',
+  heroCampaign: '/images/hero_jewellery_campaign_1790671876902.jpg',
+  productKundanNecklace: '/images/product_kundan_necklace_1790671897532.jpg',
+  productTempleJhumkas: '/images/product_temple_jhumkas_1790671913793.jpg',
+  productBridalChoker: '/images/product_bridal_choker_1790671925581.jpg',
+  artisanCraftsmanship: '/images/artisan_craftsmanship_1790671943082.jpg',
+  goldTempleJhumkas: '/images/gold_temple_jhumkas_1790681948885.jpg',
+  goldPendantVelvet: '/images/gold_pendant_velvet_1790681962364.jpg',
+  goldPendantTravertine: '/images/gold_pendant_travertine_1790681974714.jpg',
+  oxidisedSilverPeacock: '/images/oxidised_silver_peacock_1790681986973.jpg',
+  patronSangeet: '/images/patron_sangeet_portrait_1790686748089.jpg',
+  patronTempleJhumka: '/images/patron_temple_jhumka_1790686765037.jpg',
+  patronEmerald: '/images/patron_emerald_necklace_1790686783947.jpg',
+  patronFestiveKadas: '/images/patron_kadas_festive_1790686800233.jpg',
+  askAwayEditorial: '/images/ask_away_editorial_1790687141855.jpg',
+  banquetCelebrationTable: '/images/banquet_celebration_table_1790687483273.jpg',
+  heroCandidKundan: '/images/hero_candid_kundan_1790687964650.jpg',
 };
 
 export const CATEGORIES: CategoryItem[] = [

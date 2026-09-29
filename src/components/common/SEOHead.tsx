@@ -123,7 +123,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({ page, product, post, categoryN
 
     // Determine current canonical URL and social preview image
     const currentUrl = window.location.origin + window.location.pathname;
-    let previewImage = window.location.origin + '/src/assets/images/hero_jewellery_campaign_1790671876902.jpg';
+    let previewImage = window.location.origin + '/images/hero_jewellery_campaign_1790671876902.jpg';
     if (product && product.images && product.images.length > 0) {
       previewImage = window.location.origin + product.images[0];
     } else if (post && post.coverImage) {
