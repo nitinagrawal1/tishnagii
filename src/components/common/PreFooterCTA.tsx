@@ -12,7 +12,7 @@ export const PreFooterCTA: React.FC = () => {
         <div className="bg-[#FAF7F2] p-2 sm:p-3 md:p-3.5 border border-[#2A0814]/30 rounded-xs shadow-sm">
           
           {/* Inner Image Container with High-Flash Candid Banquet Photography */}
-          <div className="relative overflow-hidden aspect-[16/7] sm:aspect-[21/9] md:aspect-[24/9] min-h-[280px] sm:min-h-[340px] md:min-h-[400px] flex items-center justify-center text-center rounded-xs group">
+          <div className="relative w-full overflow-hidden aspect-[16/7] sm:aspect-[21/9] md:aspect-[24/9] min-h-[clamp(220px,35vw,400px)] flex items-center justify-center text-center rounded-xs group">
             
             {/* Banquet Table Background Image */}
             <img
