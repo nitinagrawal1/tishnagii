@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useShop } from '../../context/ShopContext';
-import { X, Trash2, Plus, Minus, ArrowRight, ShieldCheck, Tag } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ArrowRight, ShieldCheck, Tag, ShoppingBag } from 'lucide-react';
+import { EmptyState } from '../common/EmptyState';
 
 interface CartDrawerProps {
   onOpenCheckout: () => void;
@@ -97,26 +98,17 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
         {/* Cart Items List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {cart.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-[#F4EFEA] border border-[#EADBCE] flex items-center justify-center text-[#C49A45] font-serif text-2xl">
-                ति
-              </div>
-              <div>
-                <h3 className="font-serif text-lg font-medium text-[#2A0814]">Your bag is empty</h3>
-                <p className="text-xs text-[#4A1525]/70 mt-1 max-w-xs">
-                  Immerse yourself in our handcrafted polki, Kundan, and temple jewellery suites.
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  setIsCartDrawerOpen(false);
-                  navigateTo('shop');
-                }}
-                className="py-2.5 px-6 bg-[#2A0814] text-[#FAF7F2] text-xs uppercase tracking-wider font-medium hover:bg-[#380E1C] transition-colors cursor-pointer"
-              >
-                Explore Collection
-              </button>
-            </div>
+            <EmptyState
+              icon={<ShoppingBag className="w-7 h-7" />}
+              title="Your Shopping Bag is Empty"
+              description="Discover our timeless polki, Kundan, and temple jewellery suites to adorn your special moments."
+              actionLabel="Explore All Jewellery"
+              compact
+              onAction={() => {
+                setIsCartDrawerOpen(false);
+                navigateTo('shop');
+              }}
+            />
           ) : (
             cart.map(({ product, quantity }) => (
               <div

@@ -60,6 +60,6 @@
   animation-play-state: paused;
 }
 
-* {
-  text-align: justify !important;
+body {
+  text-align: left;
 }

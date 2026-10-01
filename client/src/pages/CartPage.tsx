@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
 import { Trash2, Plus, Minus, ArrowRight, ShieldCheck, Tag, ShoppingBag, Truck } from 'lucide-react';
+import { EmptyState } from '../components/common/EmptyState';
 
 interface CartPageProps {
   onOpenCheckout: () => void;
@@ -41,25 +42,13 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
   if (cart.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center py-20 bg-[#F4EFEA] border border-[#EADBCE] rounded-xs p-8 space-y-4 max-w-lg mx-auto">
-          <div className="w-16 h-16 rounded-full bg-[#FAF7F2] border border-[#C49A45]/40 flex items-center justify-center text-[#C49A45] mx-auto font-serif text-2xl">
-            ति
-          </div>
-          <div>
-            <h2 className="font-serif text-2xl font-medium text-[#2A0814]">
-              Your Shopping Bag is Empty
-            </h2>
-            <p className="text-xs text-[#4A1525]/70 mt-1 max-w-sm mx-auto font-light leading-relaxed">
-              Discover our timeless polki, Kundan, and temple jewellery suites to adorn your special moments.
-            </p>
-          </div>
-          <button
-            onClick={() => navigateTo('shop')}
-            className="py-3 px-8 bg-[#2A0814] text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs hover:bg-[#380E1C] transition-colors cursor-pointer"
-          >
-            Explore All Jewellery
-          </button>
-        </div>
+        <EmptyState
+          icon={<ShoppingBag className="w-7 h-7" />}
+          title="Your Shopping Bag is Empty"
+          description="Discover our timeless polki, Kundan, and temple jewellery suites to adorn your special moments."
+          actionLabel="Explore All Jewellery"
+          onAction={() => navigateTo('shop')}
+        />
       </div>
     );
   }
