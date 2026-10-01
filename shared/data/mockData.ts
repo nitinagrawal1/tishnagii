@@ -1,4 +1,4 @@
-import { Product, CategoryItem, BlogPost, FAQItem } from '../types';
+import type { Product, CategoryItem, BlogPost, FAQItem } from '../types/index.js';
 
 // Curated jewellery asset paths
 export const ASSETS = {

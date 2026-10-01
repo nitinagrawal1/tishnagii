@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { calculateOrderAmount, createRazorpayOrder, PaymentError } from '../server/payment';
+import { calculateOrderAmount, createRazorpayOrder, PaymentError } from '../server/payment.js';
 
 const handler = async (request: VercelRequest, response: VercelResponse) => {
   if (request.method !== 'POST') {

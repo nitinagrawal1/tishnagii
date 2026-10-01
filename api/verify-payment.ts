@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { PaymentError, verifyRazorpaySignature } from '../server/payment';
+import { PaymentError, verifyRazorpaySignature } from '../server/payment.js';
 
 const handler = async (request: VercelRequest, response: VercelResponse) => {
   if (request.method !== 'POST') {

@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import Razorpay from 'razorpay';
-import { PRODUCTS } from '../shared/data/mockData';
+import { PRODUCTS } from '../shared/data/mockData.js';
 
 export class PaymentError extends Error {
   statusCode: number;
