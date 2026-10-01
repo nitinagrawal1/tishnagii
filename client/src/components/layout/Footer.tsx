@@ -209,7 +209,7 @@ export const Footer: React.FC = () => {
                   onClick={() => navigateTo('blog')}
                   className="hover:text-[#FAF7F2] hover:underline transition-colors text-left"
                 >
-                  The TISHNAGII Gazette
+                  Journal
                 </button>
               </li>
             </ul>

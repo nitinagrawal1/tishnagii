@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
-import { FAQS } from '../data/mockData';
+import { FAQS } from '@shared/data/mockData';
 import { AskAwayFAQ } from '../components/home/AskAwayFAQ';
 import { Plus, X, Search, HelpCircle, MessageSquare, Sparkles } from 'lucide-react';
 

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { PageRoute, Product, BlogPost } from '../../types';
+import { PageRoute, Product, BlogPost } from '@shared/types';
 
 interface SEOHeadProps {
   page: PageRoute;

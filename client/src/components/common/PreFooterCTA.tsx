@@ -1,6 +1,6 @@
 import React from 'react';
 import { useShop } from '../../context/ShopContext';
-import { ASSETS } from '../../data/mockData';
+import { ASSETS } from '@shared/data/mockData';
 
 export const PreFooterCTA: React.FC = () => {
   const { navigateTo } = useShop();

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useShop } from '../../context/ShopContext';
-import { Search, Heart, ShoppingBag, Menu, X, ArrowRight } from 'lucide-react';
+import { Search, Heart, ShoppingBag, Menu, X, ArrowRight, UserRound } from 'lucide-react';
+import { AuthModal } from './AuthModal';
 
 export const Header: React.FC = () => {
   const {
@@ -14,12 +15,12 @@ export const Header: React.FC = () => {
 
   const [isBannerDismissed, setIsBannerDismissed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const navLinks = [
     { label: 'Shop All', page: 'shop' as const },
     { label: 'Collections', page: 'categories' as const },
     { label: 'About TISHNAGII', page: 'about' as const },
-    { label: 'Journal', page: 'blog' as const },
     { label: 'Concierge', page: 'contact' as const },
   ];
 
@@ -112,6 +113,14 @@ export const Header: React.FC = () => {
               <Search className="w-5 h-5" />
             </button>
 
+            <button
+              onClick={() => setIsAuthOpen(true)}
+              aria-label="Open account"
+              className="rounded-full p-1.5 text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45] sm:p-2"
+            >
+              <UserRound className="w-5 h-5" />
+            </button>
+
             {/* Wishlist Link */}
             <button
               onClick={() => navigateTo('wishlist')}
@@ -142,6 +151,8 @@ export const Header: React.FC = () => {
           </div>
         </div>
       </header>
+
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
 
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (

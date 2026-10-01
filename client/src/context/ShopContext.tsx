@@ -1,6 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, CartItem, PageRoute } from '../types';
-import { PRODUCTS } from '../data/mockData';
+import {
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  User,
+} from 'firebase/auth';
+import { Product, CartItem, PageRoute } from '@shared/types';
+import { PRODUCTS } from '@shared/data/mockData';
+import { auth } from '../firebase';
 
 interface ToastNotification {
   id: string;
@@ -9,6 +19,13 @@ interface ToastNotification {
 }
 
 interface ShopContextType {
+  user: User | null;
+  authLoading: boolean;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signOutUser: () => Promise<void>;
+
   // Navigation & Routing
   currentPage: PageRoute;
   currentSlug: string | null;
@@ -57,6 +74,30 @@ const FREE_SHIPPING_THRESHOLD = 1499;
 const STANDARD_SHIPPING_FEE = 150;
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => onAuthStateChanged(auth, (nextUser) => {
+    setUser(nextUser);
+    setAuthLoading(false);
+  }), []);
+
+  const signInWithEmail = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email.trim(), password);
+  };
+
+  const signUpWithEmail = async (email: string, password: string) => {
+    await createUserWithEmailAndPassword(auth, email.trim(), password);
+  };
+
+  const signInWithGoogle = async () => {
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  };
+
+  const signOutUser = async () => {
+    await signOut(auth);
+  };
+
   // Route state
   const [currentPage, setCurrentPage] = useState<PageRoute>('home');
   const [currentSlug, setCurrentSlug] = useState<string | null>(null);
@@ -304,6 +345,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <ShopContext.Provider
       value={{
+        user,
+        authLoading,
+        signInWithEmail,
+        signUpWithEmail,
+        signInWithGoogle,
+        signOutUser,
         currentPage,
         currentSlug,
         currentCategorySlug,

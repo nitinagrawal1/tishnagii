@@ -7,8 +7,64 @@ interface CheckoutModalProps {
   onClose: () => void;
 }
 
+interface RazorpaySuccessResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayFailureResponse {
+  error?: { description?: string };
+}
+
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  prefill: { name: string; email: string; contact: string };
+  theme: { color: string };
+  modal: { ondismiss: () => void };
+  handler: (response: RazorpaySuccessResponse) => void;
+}
+
+interface RazorpayCheckout {
+  open: () => void;
+  on: (event: 'payment.failed', callback: (response: RazorpayFailureResponse) => void) => void;
+}
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayOptions) => RazorpayCheckout;
+  }
+}
+
+let razorpayScriptPromise: Promise<NonNullable<Window['Razorpay']>> | null = null;
+
+const loadRazorpay = () => {
+  if (window.Razorpay) return Promise.resolve(window.Razorpay);
+  if (!razorpayScriptPromise) {
+    razorpayScriptPromise = new Promise<NonNullable<Window['Razorpay']>>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => window.Razorpay
+        ? resolve(window.Razorpay)
+        : reject(new Error('Razorpay Checkout did not load.'));
+      script.onerror = () => reject(new Error('Could not load Razorpay Checkout. Check your connection and try again.'));
+      document.head.appendChild(script);
+    }).catch((error: unknown) => {
+      razorpayScriptPromise = null;
+      throw error;
+    });
+  }
+  return razorpayScriptPromise;
+};
+
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
-  const { cart, finalTotal, subtotal, shippingFee, discountAmount, clearCart, showToast } = useShop();
+  const { cart, finalTotal, subtotal, shippingFee, discountAmount, couponCode, clearCart, showToast } = useShop();
 
   const [step, setStep] = useState<'details' | 'payment' | 'confirmed'>('details');
   const [orderId, setOrderId] = useState('');
@@ -27,6 +83,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
 
   if (!isOpen) return null;
 
@@ -53,18 +110,91 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     }
   };
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const completeOrder = (reference: string) => {
+    setOrderId(reference);
+    setIsSubmitting(false);
+    setStep('confirmed');
+    clearCart();
+    showToast(`Order ${reference} placed successfully!`);
+  };
 
-    setTimeout(() => {
-      const generatedId = `TSH-${Math.floor(100000 + Math.random() * 900000)}`;
-      setOrderId(generatedId);
+  const handlePaymentSuccess = async (payment: RazorpaySuccessResponse) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/verify-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payment),
+      });
+      const result = await response.json() as { verified?: boolean; error?: string };
+      if (!response.ok || !result.verified) {
+        throw new Error(result.error || 'Payment could not be verified. Please contact support before retrying.');
+      }
+      completeOrder(payment.razorpay_order_id);
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : 'Payment verification failed. Please contact support.');
       setIsSubmitting(false);
-      setStep('confirmed');
-      clearCart();
-      showToast(`Order ${generatedId} placed successfully!`);
-    }, 900);
+    }
+  };
+
+  const handlePlaceOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPaymentError('');
+
+    if (formData.paymentMethod === 'cod') {
+      completeOrder(`TSH-${Math.floor(100000 + Math.random() * 900000)}`);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const key = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      if (!key) throw new Error('Razorpay is not configured for this site.');
+
+      const orderResponse = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart.map(({ product, quantity }) => ({ product_id: product.id, quantity })),
+          coupon_code: couponCode,
+        }),
+      });
+      const orderResult = await orderResponse.json() as {
+        order_id?: string;
+        amount?: number;
+        currency?: string;
+        error?: string;
+      };
+      if (!orderResponse.ok || !orderResult.order_id || !orderResult.amount || !orderResult.currency) {
+        throw new Error(orderResult.error || 'Unable to create a payment order. Please try again.');
+      }
+
+      const Razorpay = await loadRazorpay();
+      const checkout = new Razorpay({
+        key,
+        amount: orderResult.amount,
+        currency: orderResult.currency,
+        name: 'TISHNAGII',
+        description: 'Artisanal jewellery order',
+        order_id: orderResult.order_id,
+        prefill: {
+          name: formData.fullName,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        theme: { color: '#2A0814' },
+        modal: { ondismiss: () => setIsSubmitting(false) },
+        handler: (payment) => { void handlePaymentSuccess(payment); },
+      });
+      checkout.on('payment.failed', (failure) => {
+        setPaymentError(failure.error?.description || 'Payment failed. Please try another payment method.');
+        setIsSubmitting(false);
+      });
+      checkout.open();
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : 'Unable to start payment. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   const resetAndClose = () => {
@@ -256,6 +386,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
 
           {step === 'payment' && (
             <form onSubmit={handlePlaceOrder} className="space-y-5">
+              {paymentError && (
+                <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+                  {paymentError}
+                </p>
+              )}
               <div>
                 <label className="block text-xs uppercase tracking-wider font-semibold text-[#4A1525] mb-2">
                   Select Payment Option
@@ -391,9 +526,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                   className="flex-1 py-3 bg-[#2A0814] hover:bg-[#380E1C] disabled:opacity-60 text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isSubmitting ? (
-                    <span>Securing Order...</span>
+                    <span>Opening Secure Checkout...</span>
                   ) : (
-                    <span>Confirm & Authorise ₹{finalTotal.toLocaleString('en-IN')}</span>
+                    <span>
+                      {formData.paymentMethod === 'cod' ? 'Place COD Order' : 'Pay Securely'} · ₹{finalTotal.toLocaleString('en-IN')}
+                    </span>
                   )}
                 </button>
               </div>

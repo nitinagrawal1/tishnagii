@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useShop } from '../context/ShopContext';
-import { PRODUCTS, CATEGORIES } from '../data/mockData';
+import { PRODUCTS, CATEGORIES } from '@shared/data/mockData';
 import { ProductCard } from '../components/common/ProductCard';
 import { RotateCcw, Search, Sparkles, ArrowUpDown } from 'lucide-react';
 

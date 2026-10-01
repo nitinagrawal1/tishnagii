@@ -1,6 +1,6 @@
 import React from 'react';
 import { useShop } from '../../context/ShopContext';
-import { ASSETS } from '../../data/mockData';
+import { ASSETS } from '@shared/data/mockData';
 import { ArrowRight } from 'lucide-react';
 
 export const BoldGraphicHero: React.FC = () => {

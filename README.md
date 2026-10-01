@@ -1,20 +1,20 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# TISHNAGII
 
-# Run and deploy your AI Studio app
+Artisanal jewellery storefront built with React, TypeScript, and Vite, with Firebase Authentication and Razorpay Standard Checkout.
 
-This contains everything you need to run your app locally.
+## Project Layout
 
-View your app in AI Studio: https://ai.studio/apps/13cf73ff-b41d-4d88-8880-81a7e754c2c7
+- `client/`: Vite application, static assets, and public files.
+- `server/`: Payment services and the local Express development runner.
+- `shared/`: Catalog data and types used by both frontend and backend.
+- `api/`: Vercel serverless API routes.
+- Root: package management, TypeScript, Vite, and deployment configuration.
 
-## Run Locally
+## Local Development
 
-**Prerequisites:**  Node.js
+1. Install dependencies with `npm install`.
+2. Set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and `VITE_RAZORPAY_KEY_ID` in `.env`.
+3. Set the Firebase web configuration in `client/src/firebase.ts`.
+4. Start the app and local API with `npm run dev`.
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+The local app is available at `http://localhost:3000`. Production builds run with `npm run build` and are emitted to `client/dist`.

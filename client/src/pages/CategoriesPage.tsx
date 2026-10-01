@@ -1,6 +1,6 @@
 import React from 'react';
 import { useShop } from '../context/ShopContext';
-import { CATEGORIES } from '../data/mockData';
+import { CATEGORIES } from '@shared/data/mockData';
 import { ArrowRight, Sparkles } from 'lucide-react';
 
 export const CategoriesPage: React.FC = () => {

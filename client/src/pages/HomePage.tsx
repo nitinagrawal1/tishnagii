@@ -1,19 +1,16 @@
 import React from 'react';
 import { useShop } from '../context/ShopContext';
-import { PRODUCTS, CATEGORIES, BLOG_POSTS, ASSETS } from '../data/mockData';
+import { PRODUCTS, CATEGORIES, ASSETS } from '@shared/data/mockData';
 import { ProductCard } from '../components/common/ProductCard';
 import { AskAwayFAQ } from '../components/home/AskAwayFAQ';
 import { BoldGraphicHero } from '../components/home/BoldGraphicHero';
-import { ArrowRight, Sparkles, Shield, HeartHandshake, Star, Award, Compass } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
   const { navigateTo } = useShop();
 
   const featuredProducts = PRODUCTS.filter((p) => p.isFeatured).slice(0, 4);
   const bestSellers = PRODUCTS.filter((p) => p.isBestSeller).slice(0, 4);
-  const featuredPost = BLOG_POSTS[0];
-  const journalListPosts = BLOG_POSTS.slice(1, 4);
-
   return (
     <div className="space-y-16 sm:space-y-24">
       {/* 1. Bold Graphic D2C Hero Section (Matching Reference Design) */}
@@ -370,91 +367,7 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 7. Journal & Styling Highlights (Stories & styling notes) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-10">
-          <div>
-            <span className="text-xs uppercase tracking-[0.25em] text-[#C49A45] font-semibold block mb-2">
-              The Journal
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-normal text-[#380E1C] tracking-tight">
-              Stories & styling notes
-            </h2>
-          </div>
-          <button
-            onClick={() => navigateTo('blog')}
-            className="text-xs sm:text-sm text-[#2A0814] hover:text-[#C49A45] transition-colors flex items-center gap-1.5 cursor-pointer font-normal group self-start sm:self-end pb-1"
-          >
-            <span>Read the journal</span>
-            <span className="group-hover:translate-x-1 transition-transform">→</span>
-          </button>
-        </div>
-
-        {/* 2-Column Asymmetrical Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-start">
-          {/* Left Column: Dominant Featured Article */}
-          {featuredPost && (
-            <article
-              onClick={() => navigateTo('blog-detail', featuredPost.slug)}
-              className="lg:col-span-7 group cursor-pointer"
-            >
-              <div className="relative aspect-[16/10] overflow-hidden bg-[#2A0814] rounded-xs shadow-xs">
-                <img
-                  src={featuredPost.coverImage}
-                  alt={featuredPost.title}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700 ease-out"
-                />
-              </div>
-              <div className="pt-5 space-y-2">
-                <span className="text-xs uppercase tracking-[0.2em] text-[#C49A45] font-semibold block">
-                  {featuredPost.shortCategory || 'STYLING'}
-                </span>
-                <h3 className="font-serif text-2xl sm:text-3xl text-[#2A0814] font-normal leading-snug group-hover:text-[#4A1525] transition-colors">
-                  {featuredPost.title}
-                </h3>
-              </div>
-            </article>
-          )}
-
-          {/* Right Column: 3 Editorial Stories Stacked with Dividers */}
-          <div className="lg:col-span-5 divide-y divide-[#EADBCE]">
-            {journalListPosts.map((post) => (
-              <article
-                key={post.id}
-                onClick={() => navigateTo('blog-detail', post.slug)}
-                className="group cursor-pointer py-5 first:pt-0 last:pb-0 flex items-start gap-4 sm:gap-5"
-              >
-                {/* Thumbnail Image */}
-                <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 shrink-0 aspect-square overflow-hidden bg-[#F4EFEA] rounded-xs">
-                  <img
-                    src={post.coverImage}
-                    alt={post.title}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0 pt-0.5 space-y-1 sm:space-y-1.5">
-                  <span className="text-[11px] sm:text-xs uppercase tracking-[0.18em] text-[#C49A45] font-semibold block">
-                    {post.shortCategory || post.category}
-                  </span>
-                  <h4 className="font-serif text-base sm:text-lg text-[#2A0814] font-normal leading-snug group-hover:text-[#4A1525] transition-colors break-words">
-                    {post.title}
-                  </h4>
-                  <span className="text-xs text-[#4A1525]/60 font-light block pt-1">
-                    {post.date}
-                  </span>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 8. Ask Away (FAQ Showcase matching reference design) */}
+      {/* 7. Ask Away (FAQ Showcase matching reference design) */}
       <AskAwayFAQ />
     </div>
   );

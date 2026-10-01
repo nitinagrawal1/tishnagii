@@ -29,7 +29,7 @@ import { TermsPage } from './pages/TermsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { SitemapPage } from './pages/SitemapPage';
 
-import { PRODUCTS, BLOG_POSTS, CATEGORIES } from './data/mockData';
+import { PRODUCTS, BLOG_POSTS, CATEGORIES } from '@shared/data/mockData';
 
 const AppContent: React.FC = () => {
   const { currentPage, currentSlug, currentCategorySlug } = useShop();

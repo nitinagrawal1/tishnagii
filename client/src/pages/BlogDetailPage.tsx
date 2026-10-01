@@ -1,6 +1,6 @@
 import React from 'react';
 import { useShop } from '../context/ShopContext';
-import { BLOG_POSTS, PRODUCTS } from '../data/mockData';
+import { BLOG_POSTS, PRODUCTS } from '@shared/data/mockData';
 import { ArrowLeft, Sparkles, Clock, Calendar, User, ArrowRight } from 'lucide-react';
 import { ProductCard } from '../components/common/ProductCard';
 

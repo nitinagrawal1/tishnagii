@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ASSETS } from '../../data/mockData';
+import { ASSETS } from '@shared/data/mockData';
 import { Plus, X } from 'lucide-react';
 
 export interface FAQItemData {

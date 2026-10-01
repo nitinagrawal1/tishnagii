@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
-import { BLOG_POSTS } from '../data/mockData';
+import { BLOG_POSTS } from '@shared/data/mockData';
 import { ArrowRight, BookOpen } from 'lucide-react';
 
 export const BlogPage: React.FC = () => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
-import { PRODUCTS } from '../data/mockData';
+import { PRODUCTS } from '@shared/data/mockData';
 import { ProductCard } from '../components/common/ProductCard';
 import {
   Heart,

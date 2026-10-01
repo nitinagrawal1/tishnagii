@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
-import { PRODUCTS, CATEGORIES, BLOG_POSTS } from '../data/mockData';
+import { PRODUCTS, CATEGORIES, BLOG_POSTS } from '@shared/data/mockData';
 import { Globe, FileText, Check, Copy, ArrowRight } from 'lucide-react';
 
 export const SitemapPage: React.FC = () => {
