@@ -4,5 +4,23 @@ dist/
 coverage/
 .DS_Store
 *.log
+
+# Local environment and deployment configuration
 .env*
 !.env.example
+.vercel/
+.firebase/
+
+# Private credentials and certificates
+*service-account*.json
+*serviceAccount*.json
+*firebase-adminsdk*.json
+*.pem
+*.key
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
