@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { ShopProvider, useShop } from './context/ShopContext';
 import { SEOHead } from './components/common/SEOHead';
 import { Header } from './components/layout/Header';
@@ -30,6 +30,9 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { SitemapPage } from './pages/SitemapPage';
 
 import { PRODUCTS, BLOG_POSTS, CATEGORIES } from '@shared/data/mockData';
+
+const AccountPage = lazy(() => import('./pages/AccountPage').then((module) => ({ default: module.AccountPage })));
+const OrderSuccessPage = lazy(() => import('./pages/OrderSuccessPage').then((module) => ({ default: module.OrderSuccessPage })));
 
 const AppContent: React.FC = () => {
   const { currentPage, currentSlug, currentCategorySlug } = useShop();
@@ -80,6 +83,16 @@ const AppContent: React.FC = () => {
         {currentPage === 'wishlist' && <WishlistPage />}
         {currentPage === 'cart' && (
           <CartPage onOpenCheckout={() => setIsCheckoutOpen(true)} />
+        )}
+        {currentPage === 'account' && (
+          <Suspense fallback={<div className="flex-1 px-4 py-24 text-center text-sm text-[#4A1525]/70">Loading your account...</div>}>
+            <AccountPage />
+          </Suspense>
+        )}
+        {currentPage === 'order-success' && (
+          <Suspense fallback={<div className="flex-1 px-4 py-24 text-center text-sm text-[#4A1525]/70">Preparing your receipt...</div>}>
+            <OrderSuccessPage orderId={currentSlug || ''} />
+          </Suspense>
         )}
         {currentPage === 'shipping' && <ShippingPage />}
         {currentPage === 'returns' && <ReturnsPage />}

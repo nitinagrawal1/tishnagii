@@ -7,8 +7,9 @@ import {
   signInWithPopup,
   signOut,
   User,
-} from 'firebase/auth';
+} from '@firebase/auth';
 import { Product, CartItem, PageRoute } from '@shared/types';
+import type { CustomerOrder } from '../services/account';
 import { PRODUCTS } from '@shared/data/mockData';
 import { auth } from '../firebase';
 
@@ -21,10 +22,14 @@ interface ToastNotification {
 interface ShopContextType {
   user: User | null;
   authLoading: boolean;
+  isAuthModalOpen: boolean;
+  setIsAuthModalOpen: (open: boolean) => void;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOutUser: () => Promise<void>;
+  lastOrder: CustomerOrder | null;
+  setLastOrder: (order: CustomerOrder | null) => void;
 
   // Navigation & Routing
   currentPage: PageRoute;
@@ -76,6 +81,8 @@ const STANDARD_SHIPPING_FEE = 150;
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [lastOrder, setLastOrder] = useState<CustomerOrder | null>(null);
 
   useEffect(() => onAuthStateChanged(auth, (nextUser) => {
     setUser(nextUser);
@@ -183,6 +190,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCurrentPage('wishlist');
       } else if (path.startsWith('/cart')) {
         setCurrentPage('cart');
+      } else if (path.startsWith('/order-success/')) {
+        setCurrentPage('order-success');
+        setCurrentSlug(decodeURIComponent(path.slice('/order-success/'.length)));
+      } else if (path.startsWith('/account')) {
+        setCurrentPage('account');
       } else if (path.startsWith('/shipping')) {
         setCurrentPage('shipping');
       } else if (path.startsWith('/returns')) {
@@ -234,6 +246,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     else if (page === 'faq') urlPath = '/faq';
     else if (page === 'wishlist') urlPath = '/wishlist';
     else if (page === 'cart') urlPath = '/cart';
+    else if (page === 'account') urlPath = '/account';
+    else if (page === 'order-success' && slug) urlPath = `/order-success/${encodeURIComponent(slug)}`;
     else if (page === 'shipping') urlPath = '/shipping';
     else if (page === 'returns') urlPath = '/returns';
     else if (page === 'privacy') urlPath = '/privacy';
@@ -347,10 +361,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         authLoading,
+        isAuthModalOpen,
+        setIsAuthModalOpen,
         signInWithEmail,
         signUpWithEmail,
         signInWithGoogle,
         signOutUser,
+        lastOrder,
+        setLastOrder,
         currentPage,
         currentSlug,
         currentCategorySlug,

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useShop } from '../../context/ShopContext';
-import { X, ShieldCheck, CheckCircle2, Lock, ArrowRight, Truck } from 'lucide-react';
+import { X, ShieldCheck, Lock, ArrowRight, Truck } from 'lucide-react';
+import type { CustomerAddress } from '../../services/account';
+import type { CustomerOrder } from '../../services/account';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -15,6 +17,28 @@ interface RazorpaySuccessResponse {
 
 interface RazorpayFailureResponse {
   error?: { description?: string };
+}
+
+interface VerifiedOrderResponse {
+  verified?: boolean;
+  historySaved?: boolean;
+  historyMessage?: string;
+  error?: string;
+  order_id?: string;
+  payment_id?: string;
+  amount?: number;
+  amountPaise?: number;
+  currency?: string;
+  subtotal?: number;
+  discount?: number;
+  tax?: number;
+  shipping?: number;
+  items?: CustomerOrder['items'];
+  customer?: CustomerOrder['customer'];
+  paymentMethod?: string;
+  paymentMethodDetails?: string;
+  paymentStatus?: string;
+  status?: string;
 }
 
 interface RazorpayOptions {
@@ -64,10 +88,9 @@ const loadRazorpay = () => {
 };
 
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
-  const { cart, finalTotal, subtotal, shippingFee, discountAmount, couponCode, clearCart, showToast } = useShop();
+  const { user, cart, finalTotal, subtotal, shippingFee, discountAmount, couponCode, clearCart, showToast, setLastOrder, navigateTo } = useShop();
 
-  const [step, setStep] = useState<'details' | 'payment' | 'confirmed'>('details');
-  const [orderId, setOrderId] = useState('');
+  const [step, setStep] = useState<'details' | 'payment'>('details');
 
   // Form State
   const [formData, setFormData] = useState({
@@ -78,12 +101,68 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     city: '',
     state: 'Delhi',
     pinCode: '',
+    country: 'India',
     paymentMethod: 'upi',
   });
 
+  const [savedAddresses, setSavedAddresses] = useState<CustomerAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  const paymentHandledRef = useRef(false);
+  const codRequestIdRef = useRef('');
+
+  useEffect(() => {
+    if (isOpen) codRequestIdRef.current = '';
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !user) return;
+    let isCurrent = true;
+
+    const loadSavedDetails = async () => {
+      try {
+        const { getCustomerAddresses, getCustomerProfile } = await import('../../services/account');
+        const [profile, addresses] = await Promise.all([
+          getCustomerProfile(user.uid, {
+            fullName: user.displayName || '',
+            phone: '',
+            gender: '',
+            dateOfBirth: '',
+            photoURL: user.photoURL || '',
+            emailUpdates: true,
+            smsUpdates: false,
+          }),
+          getCustomerAddresses(user.uid),
+        ]);
+        if (!isCurrent) return;
+        setSavedAddresses(addresses);
+        const defaultAddress = addresses.find((address) => address.isDefault) || addresses[0];
+        setSelectedAddressId(defaultAddress?.id || '');
+        setFormData((current) => ({
+          ...current,
+          fullName: profile?.fullName || user.displayName || current.fullName,
+          phone: profile?.phone || current.phone,
+          email: user.email || current.email,
+          ...(defaultAddress ? {
+            fullName: defaultAddress.fullName || profile?.fullName || user.displayName || current.fullName,
+            phone: defaultAddress.phone || profile?.phone || current.phone,
+            address: [defaultAddress.house, defaultAddress.street].filter(Boolean).join(', '),
+            city: defaultAddress.city,
+            state: defaultAddress.state,
+            pinCode: defaultAddress.pinCode,
+            country: defaultAddress.country || 'India',
+          } : {}),
+        }));
+      } catch {
+        if (isCurrent) showToast('Saved checkout details are unavailable. You can still enter them here.', 'info');
+      }
+    };
+
+    void loadSavedDetails();
+    return () => { isCurrent = false; };
+  }, [isOpen, user, showToast]);
 
   if (!isOpen) return null;
 
@@ -98,6 +177,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     if (!formData.city.trim()) newErrors.city = 'City is required';
     if (!formData.pinCode.trim() || formData.pinCode.length < 6)
       newErrors.pinCode = 'Valid 6-digit PIN code required';
+    if (!formData.country.trim()) newErrors.country = 'Country is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -110,27 +190,78 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     }
   };
 
-  const completeOrder = (reference: string) => {
-    setOrderId(reference);
+  const completeOrder = (order: CustomerOrder) => {
     setIsSubmitting(false);
-    setStep('confirmed');
+    setLastOrder(order);
     clearCart();
-    showToast(`Order ${reference} placed successfully!`);
+    showToast(`Order ${order.orderId} placed successfully!`);
+    onClose();
+    navigateTo('order-success', order.orderId);
   };
+
+  const getCustomerDetails = () => ({
+    fullName: formData.fullName.trim(),
+    email: formData.email.trim(),
+    phone: formData.phone.trim(),
+    address: [formData.address, formData.city, formData.state, formData.pinCode, formData.country]
+      .filter(Boolean)
+      .join(', '),
+  });
+
+  const getCartSnapshot = () => cart.map(({ product, quantity }) => ({
+    product_id: product.id,
+    quantity,
+  }));
 
   const handlePaymentSuccess = async (payment: RazorpaySuccessResponse) => {
     setIsSubmitting(true);
     try {
+      const token = user ? await user.getIdToken() : '';
       const response = await fetch('/api/verify-payment', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payment),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          ...payment,
+          cart_items: getCartSnapshot(),
+          coupon_code: couponCode,
+          customer: getCustomerDetails(),
+        }),
       });
-      const result = await response.json() as { verified?: boolean; error?: string };
+      const result = await response.json() as VerifiedOrderResponse;
       if (!response.ok || !result.verified) {
         throw new Error(result.error || 'Payment could not be verified. Please contact support before retrying.');
       }
-      completeOrder(payment.razorpay_order_id);
+      const order: CustomerOrder = {
+        id: payment.razorpay_order_id,
+        orderId: payment.razorpay_order_id,
+        paymentId: payment.razorpay_payment_id,
+        createdAt: new Date(),
+        status: result.status || 'confirmed',
+        paymentStatus: result.paymentStatus || 'verified',
+        paymentMethod: result.paymentMethod || 'unknown',
+        paymentMethodDetails: result.paymentMethodDetails,
+        amount: result.amount ?? finalTotal,
+        currency: result.currency || 'INR',
+        subtotal: result.subtotal ?? subtotal,
+        discount: result.discount ?? discountAmount,
+        tax: result.tax ?? 0,
+        shipping: result.shipping ?? shippingFee,
+        items: result.items || cart.map(({ product, quantity }) => ({
+          productId: product.id,
+          name: product.name,
+          image: product.images[0],
+          quantity,
+          price: product.price,
+        })),
+        customer: result.customer || getCustomerDetails(),
+      };
+      completeOrder(order);
+      if (user && !result.historySaved) {
+        showToast(result.historyMessage || 'Payment confirmed, but your order history could not be synchronized.', 'error');
+      }
     } catch (error) {
       setPaymentError(error instanceof Error ? error.message : 'Payment verification failed. Please contact support.');
       setIsSubmitting(false);
@@ -142,7 +273,69 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     setPaymentError('');
 
     if (formData.paymentMethod === 'cod') {
-      completeOrder(`TSH-${Math.floor(100000 + Math.random() * 900000)}`);
+      if (user) {
+        if (!codRequestIdRef.current) codRequestIdRef.current = crypto.randomUUID();
+        setIsSubmitting(true);
+        try {
+          const response = await fetch('/api/create-cod-order', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${await user.getIdToken()}`,
+            },
+            body: JSON.stringify({
+              cart_items: getCartSnapshot(),
+              coupon_code: couponCode,
+              idempotency_key: codRequestIdRef.current,
+              customer: getCustomerDetails(),
+            }),
+          });
+          const result = await response.json() as VerifiedOrderResponse;
+          if (!response.ok || !result.order_id) {
+            throw new Error(result.error || 'Unable to save your COD order. Please try again.');
+          }
+          completeOrder({
+            id: result.order_id,
+            orderId: result.order_id,
+            paymentId: '',
+            createdAt: new Date(),
+            status: result.status || 'confirmed',
+            paymentStatus: result.paymentStatus || 'pending',
+            paymentMethod: result.paymentMethod || 'cod',
+            paymentMethodDetails: result.paymentMethodDetails,
+            amount: result.amount ?? finalTotal,
+            currency: result.currency || 'INR',
+            subtotal: result.subtotal ?? subtotal,
+            discount: result.discount ?? discountAmount,
+            tax: result.tax ?? 0,
+            shipping: result.shipping ?? shippingFee,
+            items: result.items || [],
+            customer: result.customer || getCustomerDetails(),
+          });
+        } catch (error) {
+          setPaymentError(error instanceof Error ? error.message : 'Unable to place your COD order.');
+          setIsSubmitting(false);
+        }
+      } else {
+        const guestOrderId = `TSH-${Math.floor(100000 + Math.random() * 900000)}`;
+        completeOrder({
+          id: guestOrderId,
+          orderId: guestOrderId,
+          paymentId: '',
+          createdAt: new Date(),
+          status: 'confirmed',
+          paymentStatus: 'pending',
+          paymentMethod: 'cod',
+          amount: finalTotal,
+          currency: 'INR',
+          subtotal,
+          discount: discountAmount,
+          tax: 0,
+          shipping: shippingFee,
+          items: cart.map(({ product, quantity }) => ({ productId: product.id, name: product.name, image: product.images[0], quantity, price: product.price })),
+          customer: getCustomerDetails(),
+        });
+      }
       return;
     }
 
@@ -153,7 +346,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
 
       const orderResponse = await fetch('/api/create-order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(user ? { Authorization: `Bearer ${await user.getIdToken()}` } : {}),
+        },
         body: JSON.stringify({
           items: cart.map(({ product, quantity }) => ({ product_id: product.id, quantity })),
           coupon_code: couponCode,
@@ -170,6 +366,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
       }
 
       const Razorpay = await loadRazorpay();
+      paymentHandledRef.current = false;
       const checkout = new Razorpay({
         key,
         amount: orderResult.amount,
@@ -183,10 +380,21 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
           contact: formData.phone,
         },
         theme: { color: '#2A0814' },
-        modal: { ondismiss: () => setIsSubmitting(false) },
-        handler: (payment) => { void handlePaymentSuccess(payment); },
+        modal: {
+          ondismiss: () => {
+            if (!paymentHandledRef.current) {
+              setPaymentError('Checkout was cancelled. No payment was confirmed.');
+            }
+            setIsSubmitting(false);
+          },
+        },
+        handler: (payment) => {
+          paymentHandledRef.current = true;
+          void handlePaymentSuccess(payment);
+        },
       });
       checkout.on('payment.failed', (failure) => {
+        paymentHandledRef.current = true;
         setPaymentError(failure.error?.description || 'Payment failed. Please try another payment method.');
         setIsSubmitting(false);
       });
@@ -199,6 +407,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
 
   const resetAndClose = () => {
     setStep('details');
+    setPaymentError('');
     onClose();
   };
 
@@ -225,7 +434,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
             <p className="text-[11px] text-[#4A1525]/70">
               {step === 'details' && 'Step 1 of 2: Shipping Destination'}
               {step === 'payment' && 'Step 2 of 2: Secure Payment & Verification'}
-              {step === 'confirmed' && 'Order Placed & Confirmed'}
             </p>
           </div>
           <button
@@ -294,6 +502,41 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                 )}
               </div>
 
+              {savedAddresses.length > 0 && (
+                <div>
+                  <label className="block text-xs font-medium text-[#2A0814] mb-1" htmlFor="checkout-saved-address">
+                    Use a saved address
+                  </label>
+                  <select
+                    id="checkout-saved-address"
+                    value={selectedAddressId}
+                    onChange={(event) => {
+                      const address = savedAddresses.find((item) => item.id === event.target.value);
+                      setSelectedAddressId(event.target.value);
+                      if (!address) return;
+                      setFormData((current) => ({
+                        ...current,
+                        fullName: address.fullName,
+                        phone: address.phone,
+                        address: [address.house, address.street].filter(Boolean).join(', '),
+                        city: address.city,
+                        state: address.state,
+                        pinCode: address.pinCode,
+                        country: address.country || 'India',
+                      }));
+                    }}
+                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus:border-[#C49A45] rounded-xs"
+                  >
+                    {savedAddresses.map((address) => (
+                      <option key={address.id} value={address.id}>
+                        {address.label} · {address.house}, {address.city} {address.isDefault ? '(Default)' : ''}
+                      </option>
+                    ))}
+                    <option value="">Use a different address</option>
+                  </select>
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-medium text-[#2A0814] mb-1">
                   Delivery Address & Apartment / Landmark *
@@ -311,7 +554,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                 )}
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-[#2A0814] mb-1">City *</label>
                   <input
@@ -363,6 +606,18 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                   {errors.pinCode && (
                     <span className="text-[10px] text-red-600">{errors.pinCode}</span>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-[#2A0814] mb-1">Country *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.country}
+                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus:border-[#C49A45] rounded-xs"
+                  />
+                  {errors.country && <span className="text-[10px] text-red-600">{errors.country}</span>}
                 </div>
               </div>
 
@@ -537,54 +792,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
             </form>
           )}
 
-          {step === 'confirmed' && (
-            <div className="text-center py-6 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-8 h-8" />
-              </div>
-
-              <div>
-                <h3 className="font-serif text-2xl font-medium text-[#2A0814]">
-                  Thank You, {formData.fullName}!
-                </h3>
-                <p className="text-xs text-[#4A1525]/70 mt-1">
-                  Your artisanal order has been registered in our Jaipur atelier.
-                </p>
-              </div>
-
-              <div className="p-4 bg-[#F4EFEA] border border-[#EADBCE] rounded-xs text-left text-xs font-mono space-y-2 max-w-md mx-auto">
-                <div className="flex justify-between">
-                  <span className="text-[#4A1525]/70">Order Reference:</span>
-                  <span className="font-bold text-[#2A0814]">{orderId}</span>
-                </div>
-                <div className="flex flex-wrap justify-between gap-x-2">
-                  <span className="text-[#4A1525]/70">Delivery Address:</span>
-                  <span className="min-w-0 max-w-full break-words text-right text-[#2A0814]">
-                    {formData.address}, {formData.city} - {formData.pinCode}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#4A1525]/70">Payment Mode:</span>
-                  <span className="text-[#2A0814] uppercase">{formData.paymentMethod}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#4A1525]/70">Estimated Delivery:</span>
-                  <span className="text-emerald-800 font-medium">2–4 Business Days via Air</span>
-                </div>
-              </div>
-
-              <p className="text-xs text-[#4A1525]/70 max-w-sm mx-auto">
-                A confirmation with your tax invoice and real-time transit tracking link has been dispatched to <strong>{formData.email}</strong> and mobile <strong>{formData.phone}</strong>.
-              </p>
-
-              <button
-                onClick={resetAndClose}
-                className="py-3 px-8 bg-[#2A0814] text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold hover:bg-[#380E1C] rounded-xs transition-colors cursor-pointer"
-              >
-                Continue Browsing Collection
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>

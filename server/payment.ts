@@ -22,17 +22,26 @@ const getRazorpay = () => {
   return new Razorpay({ key_id: keyId, key_secret: keySecret });
 };
 
+export const getRazorpayClient = getRazorpay;
+
 interface OrderItemInput {
   product_id: unknown;
   quantity: unknown;
 }
 
-export const calculateOrderAmount = (items: unknown, couponCode: unknown) => {
+export const getOrderSummary = (items: unknown, couponCode: unknown) => {
   if (!Array.isArray(items) || items.length === 0) {
     throw new PaymentError('Your cart is empty.', 400);
   }
 
   let subtotal = 0;
+  const orderItems: {
+    productId: string;
+    name: string;
+    image: string;
+    quantity: number;
+    price: number;
+  }[] = [];
   for (const item of items as OrderItemInput[]) {
     if (
       typeof item?.product_id !== 'string' ||
@@ -49,6 +58,13 @@ export const calculateOrderAmount = (items: unknown, couponCode: unknown) => {
     }
 
     subtotal += product.price * quantity;
+    orderItems.push({
+      productId: product.id,
+      name: product.name,
+      image: product.images[0],
+      quantity,
+      price: product.price,
+    });
   }
 
   const normalizedCoupon = typeof couponCode === 'string' ? couponCode.trim().toUpperCase() : '';
@@ -65,15 +81,28 @@ export const calculateOrderAmount = (items: unknown, couponCode: unknown) => {
     throw new PaymentError('The minimum payment amount is ₹1.00.', 400);
   }
 
-  return amount;
+  return {
+    amountPaise: amount,
+    amount: amount / 100,
+    currency: 'INR',
+    subtotal,
+    discount,
+    tax: 0,
+    shipping,
+    items: orderItems,
+  };
 };
 
-export const createRazorpayOrder = async (amount: number) => {
+export const calculateOrderAmount = (items: unknown, couponCode: unknown) =>
+  getOrderSummary(items, couponCode).amountPaise;
+
+export const createRazorpayOrder = async (amount: number, customerUid?: string) => {
   try {
     const order = await getRazorpay().orders.create({
       amount,
       currency: 'INR',
       receipt: `tsh-${Date.now()}`,
+      ...(customerUid ? { notes: { customer_uid: customerUid } } : {}),
     });
 
     return {

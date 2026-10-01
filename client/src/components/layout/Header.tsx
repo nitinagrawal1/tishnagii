@@ -1,21 +1,27 @@
 import React, { useState } from 'react';
 import { useShop } from '../../context/ShopContext';
-import { Search, Heart, ShoppingBag, Menu, X, ArrowRight, UserRound } from 'lucide-react';
+import { Search, Heart, ShoppingBag, Menu, X, ArrowRight, UserRound, LogOut } from 'lucide-react';
 import { AuthModal } from './AuthModal';
 
 export const Header: React.FC = () => {
   const {
     currentPage,
+    user,
+    authLoading,
+    isAuthModalOpen,
+    setIsAuthModalOpen,
+    signOutUser,
     navigateTo,
     cartCount,
     wishlist,
     setIsCartDrawerOpen,
     setIsSearchOpen,
+    showToast,
   } = useShop();
 
   const [isBannerDismissed, setIsBannerDismissed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   const navLinks = [
     { label: 'Shop All', page: 'shop' as const },
@@ -113,13 +119,75 @@ export const Header: React.FC = () => {
               <Search className="w-5 h-5" />
             </button>
 
-            <button
-              onClick={() => setIsAuthOpen(true)}
-              aria-label="Open account"
-              className="rounded-full p-1.5 text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45] sm:p-2"
-            >
-              <UserRound className="w-5 h-5" />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => {
+                  if (user) setIsAccountMenuOpen((open) => !open);
+                  else setIsAuthModalOpen(true);
+                }}
+                aria-label={user ? 'Open account menu' : 'Sign in or create account'}
+                aria-expanded={user ? isAccountMenuOpen : undefined}
+                disabled={authLoading}
+                className="rounded-full p-1.5 text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45] disabled:opacity-60 sm:p-2"
+              >
+                {user?.photoURL ? (
+                  <img src={user.photoURL} alt="" className="w-5 h-5 rounded-full object-cover" />
+                ) : user ? (
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#C49A45] text-[10px] font-semibold text-[#2A0814]">
+                    {(user.displayName || user.email || 'T').charAt(0).toUpperCase()}
+                  </span>
+                ) : (
+                  <UserRound className="w-5 h-5" />
+                )}
+              </button>
+              {user && isAccountMenuOpen && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-64 border border-[#EADBCE] bg-[#FAF7F2] p-2 shadow-xl">
+                  <div className="border-b border-[#EADBCE] px-3 py-2">
+                    <p className="truncate text-sm font-medium text-[#2A0814]">{user.displayName || 'TISHNAGII customer'}</p>
+                    <p className="truncate text-xs text-[#4A1525]/65">{user.email}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsAccountMenuOpen(false);
+                      navigateTo('account');
+                    }}
+                    className="w-full px-3 py-2 text-left text-sm text-[#2A0814] transition-colors hover:bg-[#F4EFEA]"
+                  >
+                    My Account
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsAccountMenuOpen(false);
+                      navigateTo('wishlist');
+                    }}
+                    className="w-full px-3 py-2 text-left text-sm text-[#2A0814] transition-colors hover:bg-[#F4EFEA]"
+                  >
+                    Wishlist
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsAccountMenuOpen(false);
+                      navigateTo('cart');
+                    }}
+                    className="w-full px-3 py-2 text-left text-sm text-[#2A0814] transition-colors hover:bg-[#F4EFEA]"
+                  >
+                    Shopping Bag
+                  </button>
+                  <button
+                    onClick={() => {
+                      void signOutUser().then(() => {
+                        setIsAccountMenuOpen(false);
+                        showToast('You have been signed out.', 'info');
+                      }).catch(() => showToast('Unable to sign out. Please try again.', 'error'));
+                    }}
+                    className="mt-1 flex w-full items-center gap-2 border-t border-[#EADBCE] px-3 py-2 text-left text-sm text-[#4A1525] transition-colors hover:bg-[#F4EFEA]"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Wishlist Link */}
             <button
@@ -152,7 +220,7 @@ export const Header: React.FC = () => {
         </div>
       </header>
 
-      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
 
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (

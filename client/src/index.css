@@ -63,3 +63,34 @@
 body {
   text-align: left;
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .invoice-print-area,
+  .invoice-print-area * {
+    visibility: visible;
+  }
+
+  .invoice-print-area {
+    position: absolute !important;
+    inset: 0 auto auto 0;
+    width: 100%;
+    border: 0 !important;
+    background: #fff !important;
+    color: #1c1819 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

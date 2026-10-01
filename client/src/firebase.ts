@@ -1,21 +1,20 @@
-import { FirebaseError, getApps, initializeApp } from 'firebase/app';
+import { FirebaseError, getApps, initializeApp } from '@firebase/app';
 import {
   browserPopupRedirectResolver,
   browserLocalPersistence,
   getAuth,
   initializeAuth,
-} from 'firebase/auth';
+} from '@firebase/auth';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDQHeABBJjH_g8-b7wCqHe8dnoapQv3bgE',
   authDomain: 'tishnagii.firebaseapp.com',
   projectId: 'tishnagii',
-  storageBucket: 'tishnagii.firebasestorage.app',
   messagingSenderId: '863250394929',
   appId: '1:863250394929:web:c78ad0baf546dd32d3ca10',
 };
 
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+export const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
 export const auth = (() => {
   try {

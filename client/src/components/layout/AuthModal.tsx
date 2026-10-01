@@ -18,11 +18,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const runAuthAction = async (action: () => Promise<void>) => {
+  const runAuthAction = async (action: () => Promise<void>, closeOnSuccess = false) => {
     setError('');
     setIsSubmitting(true);
     try {
       await action();
+      if (closeOnSuccess) onClose();
     } catch (authError) {
       setError(getAuthErrorMessage(authError));
     } finally {
@@ -34,7 +35,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     event.preventDefault();
     return runAuthAction(() => mode === 'signin'
       ? signInWithEmail(email, password)
-      : signUpWithEmail(email, password));
+      : signUpWithEmail(email, password), true);
   };
 
   return (
@@ -147,7 +148,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 disabled={isSubmitting}
-                onClick={() => runAuthAction(signInWithGoogle)}
+                onClick={() => runAuthAction(signInWithGoogle, true)}
                 className="w-full border border-ivory-200 bg-white/60 px-4 py-3 text-sm font-medium text-burgundy-900 transition-colors hover:bg-ivory-100 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Continue with Google

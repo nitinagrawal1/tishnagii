@@ -10,6 +10,8 @@ export type PageRoute =
   | 'faq'
   | 'wishlist'
   | 'cart'
+  | 'account'
+  | 'order-success'
   | 'shipping'
   | 'returns'
   | 'privacy'

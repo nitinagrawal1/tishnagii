@@ -101,6 +101,12 @@ export const SEOHead: React.FC<SEOHeadProps> = ({ page, product, post, categoryN
     } else if (page === 'cart') {
       title = 'Shopping Bag | TISHNAGII';
       description = 'Review your chosen artificial jewellery items, apply gift vouchers, and checkout securely.';
+    } else if (page === 'account') {
+      title = 'My Account | TISHNAGII';
+      description = 'Manage your TISHNAGII profile, saved addresses, and orders.';
+    } else if (page === 'order-success') {
+      title = 'Order Confirmation | TISHNAGII';
+      description = 'Your TISHNAGII order details and invoice.';
     } else if (page === 'shipping') {
       title = 'Shipping & Delivery Information | TISHNAGII';
       description = 'Free insured express shipping across India on orders over ₹1,499. Worldwide express transit with DHL.';
@@ -153,7 +159,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({ page, product, post, categoryN
     updateOrCreateMeta('meta[name="twitter:image"]', 'name', 'twitter:image', previewImage);
 
     // Robots indexing tag
-    const isNoIndex = page === '404' || page === 'cart' || page === 'wishlist';
+    const isNoIndex = page === '404' || page === 'cart' || page === 'wishlist' || page === 'account' || page === 'order-success';
     updateOrCreateMeta('meta[name="robots"]', 'name', 'robots', isNoIndex ? 'noindex, follow' : 'index, follow');
 
     // Canonical link tag
