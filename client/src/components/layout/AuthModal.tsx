@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { getAuthErrorMessage } from '../../firebase';
-import { X } from 'lucide-react';
+import { X, RefreshCw } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -39,10 +39,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-60 overflow-y-auto p-4 flex items-center justify-center" role="presentation">
+    <div className="fixed inset-0 z-60 overflow-y-auto overscroll-contain p-4 flex items-center justify-center" role="presentation">
       <button
         type="button"
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
         onClick={onClose}
         aria-label="Close account dialog"
       />
@@ -69,7 +69,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             type="button"
             onClick={onClose}
             aria-label="Close account dialog"
-            className="rounded-full p-1.5 text-burgundy-900 transition-colors hover:bg-ivory-200/50 hover:text-gold-500"
+            className="rounded-full p-1.5 text-burgundy-900 transition-colors hover:bg-ivory-200/50 hover:text-gold-500 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
           >
             <X className="h-5 w-5" />
           </button>
@@ -92,9 +92,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => runAuthAction(signOutUser)}
-                className="w-full border border-burgundy-900 px-4 py-3 text-sm font-medium text-burgundy-900 transition-colors hover:bg-burgundy-900 hover:text-ivory-50 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full border border-burgundy-900 px-4 py-3 text-[16px] sm:text-sm font-medium text-burgundy-900 transition-colors hover:bg-burgundy-900 hover:text-ivory-50 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation flex items-center justify-center gap-2"
               >
-                {isSubmitting ? 'Signing out...' : 'Sign out'}
+                {isSubmitting && <RefreshCw className="h-4 w-4 animate-spin" />}
+                Sign out
               </button>
             </div>
           ) : (
@@ -111,7 +112,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     required
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
-                    className="w-full border border-ivory-200 bg-white/60 px-3 py-2.5 text-sm text-burgundy-900 focus:border-gold-500 focus:outline-none"
+                    className="w-full border border-ivory-200 bg-white/60 px-3 py-2.5 text-sm text-burgundy-900 focus:border-gold-500 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45]"
                   />
                 </div>
                 <div>
@@ -126,16 +127,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     required
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
-                    className="w-full border border-ivory-200 bg-white/60 px-3 py-2.5 text-sm text-burgundy-900 focus:border-gold-500 focus:outline-none"
+                    className="w-full border border-ivory-200 bg-white/60 px-3 py-2.5 text-sm text-burgundy-900 focus:border-gold-500 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45]"
                   />
                 </div>
                 {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-burgundy-900 px-4 py-3 text-sm font-medium text-ivory-50 transition-colors hover:bg-burgundy-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full bg-burgundy-900 px-4 py-3 text-[16px] sm:text-sm font-medium text-ivory-50 transition-colors hover:bg-burgundy-700 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                 >
-                  {isSubmitting ? 'Please wait...' : mode === 'signin' ? 'Sign in with email' : 'Create account'}
+                  {isSubmitting && <RefreshCw className="h-4 w-4 animate-spin" />}
+                  {mode === 'signin' ? 'Sign in with email' : 'Create account'}
                 </button>
               </form>
 

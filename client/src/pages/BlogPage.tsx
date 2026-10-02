@@ -78,7 +78,7 @@ export const BlogPage: React.FC = () => {
                   <span>{post.readTime}</span>
                 </div>
 
-                <h2 className="font-serif text-xl font-medium text-[#2A0814] group-hover:text-[#4A1525] break-words leading-snug">
+                <h2 className="font-serif text-xl font-medium text-[#2A0814] group-hover:text-[#4A1525] break-words leading-snug tabular-nums">
                   {post.title}
                 </h2>
 

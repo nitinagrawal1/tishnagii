@@ -11,9 +11,33 @@ export const ShopPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>(
     currentCategorySlug || 'all'
   );
-  const [sortBy, setSortBy] = useState<string>('featured');
-  const [inStockOnly, setInStockOnly] = useState<boolean>(false);
+  const [sortBy, setSortBy] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('sort') || 'featured';
+    }
+    return 'featured';
+  });
+  const [inStockOnly, setInStockOnly] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('inStock') === 'true';
+    }
+    return false;
+  });
   const [searchFilter, setSearchFilter] = useState<string>('');
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (sortBy !== 'featured') url.searchParams.set('sort', sortBy);
+    else url.searchParams.delete('sort');
+    
+    if (inStockOnly) url.searchParams.set('inStock', 'true');
+    else url.searchParams.delete('inStock');
+    
+    window.history.replaceState({}, '', url);
+  }, [sortBy, inStockOnly]);
 
   // Handle category change if passed from props or state
   React.useEffect(() => {
@@ -118,7 +142,7 @@ export const ShopPage: React.FC = () => {
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
             placeholder="Search within this collection..."
-            className="w-full bg-[#F4EFEA] border border-[#EADBCE] pl-9 pr-3 py-1.5 text-xs text-[#2A0814] placeholder-[#4A1525]/40 rounded-xs focus:outline-none focus:border-[#C49A45]"
+            className="w-full bg-[#F4EFEA] border border-[#EADBCE] pl-9 pr-3 py-1.5 text-xs text-[#2A0814] placeholder-[#4A1525]/40 rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
           />
           {searchFilter && (
             <button
@@ -138,7 +162,7 @@ export const ShopPage: React.FC = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-[#F4EFEA] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus:border-[#C49A45] cursor-pointer"
+              className="bg-[#F4EFEA] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] cursor-pointer"
             >
               <option value="featured">Featured Suites</option>
               <option value="price-low">Price: Low to High</option>
@@ -163,7 +187,7 @@ export const ShopPage: React.FC = () => {
           {(selectedCategory !== 'all' || inStockOnly || searchFilter) && (
             <button
               onClick={resetFilters}
-              className="flex items-center gap-1 text-xs text-[#4A1525] hover:text-[#C49A45] underline ml-auto sm:ml-0 cursor-pointer"
+              className="flex items-center gap-1 text-xs text-[#4A1525] hover:text-[#C49A45] underline ml-auto sm:ml-0 cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset All</span>
@@ -196,7 +220,7 @@ export const ShopPage: React.FC = () => {
             ति
           </div>
           <div>
-            <h3 className="font-serif text-xl font-medium text-[#2A0814]">
+            <h3 className="font-serif text-xl font-medium text-[#2A0814] tabular-nums">
               No Pieces Found
             </h3>
             <p className="text-xs text-[#4A1525]/70 mt-1">
@@ -205,7 +229,7 @@ export const ShopPage: React.FC = () => {
           </div>
           <button
             onClick={resetFilters}
-            className="py-2 px-6 bg-[#2A0814] text-[#FAF7F2] text-xs uppercase tracking-wider font-semibold rounded-xs hover:bg-[#380E1C] transition-colors cursor-pointer"
+            className="py-2 px-6 bg-[#2A0814] text-[#FAF7F2] text-xs uppercase tracking-wider font-semibold rounded-xs hover:bg-[#380E1C] transition-colors cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
           >
             Reset Filters
           </button>

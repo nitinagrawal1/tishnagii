@@ -21,7 +21,7 @@ export const ShippingPage: React.FC = () => {
           <Truck className="w-6 h-6 text-[#C49A45] mx-auto" />
           <h3 className="font-serif text-base font-medium text-[#2A0814]">Complimentary Pan-India</h3>
           <p className="text-xs text-[#4A1525]/75 font-light">
-            Free express delivery on all orders above ₹1,499 across all 19,000+ Indian pincodes.
+            Free express delivery on all orders above <span className="tabular-nums">₹1,499</span> across all 19,000+ Indian pincodes.
           </p>
         </div>
 
@@ -43,25 +43,25 @@ export const ShippingPage: React.FC = () => {
       </div>
 
       <div className="bg-[#FAF7F2] p-8 border border-[#EADBCE] rounded-xs space-y-6 text-xs sm:text-sm text-[#4A1525]/85 leading-relaxed font-light">
-        <h3 className="font-serif text-xl font-medium text-[#2A0814]">
+        <h3 className="font-serif text-xl font-medium text-[#2A0814] tabular-nums">
           Dispatch & Verification Protocol
         </h3>
         <p>
           Each order is inspected under optical magnification by our Jaipur quality team before being enclosed in a velvet-lined jewelry presentation box, shrink-wrapped, and sealed inside a tamper-evident transit pouch with security holograms.
         </p>
 
-        <h3 className="font-serif text-xl font-medium text-[#2A0814] pt-2">
+        <h3 className="font-serif text-xl font-medium text-[#2A0814] pt-2 tabular-nums">
           Tracking & WhatsApp Alerts
         </h3>
         <p>
           Upon dispatch from our Jaipur atelier, an automated SMS and WhatsApp dispatch alert containing your direct courier tracking AWB link is transmitted. You can monitor every checkpoint from origin to your doorstep.
         </p>
 
-        <h3 className="font-serif text-xl font-medium text-[#2A0814] pt-2">
+        <h3 className="font-serif text-xl font-medium text-[#2A0814] pt-2 tabular-nums">
           Cash on Delivery (COD) Guidelines
         </h3>
         <p>
-          COD is available for orders up to ₹10,000. Prior to shipping, an automated verification message will be sent to your mobile phone. Cash on Delivery orders must be paid in full to the courier personnel before inspecting parcel contents, in accordance with standard air courier guidelines.
+          COD is available for orders up to <span className="tabular-nums">₹10,000</span>. Prior to shipping, an automated verification message will be sent to your mobile phone. Cash on Delivery orders must be paid in full to the courier personnel before inspecting parcel contents, in accordance with standard air courier guidelines.
         </p>
       </div>
     </div>

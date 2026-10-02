@@ -46,7 +46,7 @@ export const ReturnsPage: React.FC = () => {
       </div>
 
       <div className="bg-[#FAF7F2] p-8 border border-[#EADBCE] rounded-xs space-y-6 text-xs sm:text-sm text-[#4A1525]/85 leading-relaxed font-light">
-        <h3 className="font-serif text-xl font-medium text-[#2A0814]">
+        <h3 className="font-serif text-xl font-medium text-[#2A0814] tabular-nums">
           Return Eligibility Conditions
         </h3>
         <ul className="space-y-2 list-disc pl-5">
@@ -55,7 +55,7 @@ export const ReturnsPage: React.FC = () => {
           <li>Customised bridal pieces with bespoke alteration requests cannot be returned unless manufacturing damage is evident.</li>
         </ul>
 
-        <h3 className="font-serif text-xl font-medium text-[#2A0814] pt-2">
+        <h3 className="font-serif text-xl font-medium text-[#2A0814] pt-2 tabular-nums">
           Damaged in Transit Protection
         </h3>
         <p>

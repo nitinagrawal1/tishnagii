@@ -77,7 +77,19 @@ const formatPaymentMethod = (method: string, details?: string) => {
 
 export const AccountPage: React.FC = () => {
   const { user, authLoading, setIsAuthModalOpen, navigateTo, showToast } = useShop();
-  const [section, setSection] = useState<AccountSection>('profile');
+  const [section, setSection] = useState<AccountSection>(() => {
+    if (typeof window === 'undefined') return 'profile';
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab') as AccountSection;
+    return sections.some(s => s.id === tab) ? tab : 'profile';
+  });
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', section);
+    window.history.replaceState({}, '', url);
+  }, [section]);
   const [profile, setProfile] = useState<CustomerProfile>(initialProfile);
   const [email, setEmail] = useState('');
   const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
@@ -242,6 +254,7 @@ export const AccountPage: React.FC = () => {
   };
 
   const handleDeleteAddress = async (addressId: string) => {
+    if (!window.confirm('Are you sure you want to delete this address?')) return;
     if (!user) return;
     try {
       await deleteCustomerAddress(user.uid, addressId);
@@ -313,7 +326,7 @@ export const AccountPage: React.FC = () => {
                   value={profile.photoURL}
                   onChange={(event) => setProfile({ ...profile, photoURL: event.target.value })}
                   placeholder="/images/your-profile-photo.jpg"
-                  className="mt-1 block w-full border border-[#EADBCE] bg-white/60 px-3 py-2 outline-none focus:border-[#C49A45]"
+                  className="mt-1 block w-full border border-[#EADBCE] bg-white/60 px-3 py-2 outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                 />
               </label>
               <p className="mt-1 text-xs text-[#4A1525]/60">Use an image already hosted publicly; no file upload is required.</p>
@@ -323,19 +336,19 @@ export const AccountPage: React.FC = () => {
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="space-y-1 text-sm text-[#2A0814]">
               <span>Full Name</span>
-              <input required value={profile.fullName} onChange={(event) => setProfile({ ...profile, fullName: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus:border-[#C49A45]" />
+              <input required value={profile.fullName} onChange={(event) => setProfile({ ...profile, fullName: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]" />
             </label>
             <label className="space-y-1 text-sm text-[#2A0814]">
               <span>Email</span>
-              <input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus:border-[#C49A45]" />
+              <input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]" />
             </label>
             <label className="space-y-1 text-sm text-[#2A0814]">
               <span>Mobile Number</span>
-              <input type="tel" autoComplete="tel" value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus:border-[#C49A45]" />
+              <input type="tel" autoComplete="tel" value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]" />
             </label>
             <label className="space-y-1 text-sm text-[#2A0814]">
               <span>Gender</span>
-              <select value={profile.gender} onChange={(event) => setProfile({ ...profile, gender: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus:border-[#C49A45]">
+              <select value={profile.gender} onChange={(event) => setProfile({ ...profile, gender: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]">
                 <option value="">Select</option>
                 <option value="woman">Woman</option>
                 <option value="man">Man</option>
@@ -345,10 +358,10 @@ export const AccountPage: React.FC = () => {
             </label>
             <label className="space-y-1 text-sm text-[#2A0814]">
               <span>Date of Birth</span>
-              <input type="date" value={profile.dateOfBirth} onChange={(event) => setProfile({ ...profile, dateOfBirth: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus:border-[#C49A45]" />
+              <input type="date" value={profile.dateOfBirth} onChange={(event) => setProfile({ ...profile, dateOfBirth: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]" />
             </label>
           </div>
-          <button disabled={isSavingProfile} className="bg-[#2A0814] px-7 py-3 text-xs font-semibold uppercase tracking-widest text-[#FAF7F2] transition-colors hover:bg-[#380E1C] disabled:opacity-60">
+          <button disabled={isSavingProfile} className="bg-[#2A0814] px-7 py-3 text-xs font-semibold uppercase tracking-widest text-[#FAF7F2] transition-colors hover:bg-[#380E1C] disabled:opacity-60 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0">
             {isSavingProfile ? 'Saving...' : 'Save Profile'}
           </button>
         </form>
@@ -381,8 +394,8 @@ export const AccountPage: React.FC = () => {
               <label className="space-y-1 text-sm text-[#2A0814]">Save As<select value={addressForm.label} onChange={(event) => setAddressForm({ ...addressForm, label: event.target.value as AddressLabel })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5"><option>Home</option><option>Work</option><option>Other</option></select></label>
               <label className="flex items-center gap-2 self-end pb-2 text-sm text-[#2A0814]"><input type="checkbox" checked={addressForm.isDefault} onChange={(event) => setAddressForm({ ...addressForm, isDefault: event.target.checked })} /> Set as default address</label>
               <div className="flex gap-2 sm:col-span-2">
-                <button disabled={isSavingAddress} className="bg-[#2A0814] px-5 py-2.5 text-sm text-[#FAF7F2] disabled:opacity-60">{isSavingAddress ? 'Saving...' : editingAddressId ? 'Update Address' : 'Save Address'}</button>
-                <button type="button" onClick={resetAddressForm} className="border border-[#EADBCE] px-5 py-2.5 text-sm text-[#2A0814]">Cancel</button>
+                <button disabled={isSavingAddress} className="bg-[#2A0814] px-5 py-2.5 text-sm text-[#FAF7F2] disabled:opacity-60 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0">{isSavingAddress ? 'Saving...' : editingAddressId ? 'Update Address' : 'Save Address'}</button>
+                <button type="button" onClick={resetAddressForm} className="border border-[#EADBCE] px-5 py-2.5 text-sm text-[#2A0814] touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0">Cancel</button>
               </div>
             </form>
           )}
@@ -392,7 +405,7 @@ export const AccountPage: React.FC = () => {
           ) : (
             <div className="divide-y divide-[#EADBCE] border-y border-[#EADBCE]">
               {addresses.map((address) => (
-                <article key={address.id} className="flex flex-col justify-between gap-4 py-5 sm:flex-row sm:items-center">
+                <article key={address.id} className="flex flex-col justify-between gap-4 py-5 sm:flex-row sm:items-center touch-manipulation">
                   <div className="flex gap-3">
                     <MapPin className="mt-1 h-5 w-5 shrink-0 text-[#C49A45]" />
                     <div>
@@ -444,7 +457,7 @@ export const AccountPage: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {orders.map((order) => (
-                <article key={order.id} className="border border-[#EADBCE] bg-[#FAF7F2]">
+                <article key={order.id} className="border border-[#EADBCE] bg-[#FAF7F2] touch-manipulation">
                   <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EADBCE] bg-[#F4EFEA] px-4 py-3 text-xs">
                     <span className="font-medium text-[#2A0814]">Order {order.orderId || order.id}</span>
                     <span className="text-[#4A1525]/70">{formatOrderDate(order.createdAt)}</span>
@@ -456,14 +469,14 @@ export const AccountPage: React.FC = () => {
                         {item.image && <img src={item.image} alt="" className="h-14 w-14 shrink-0 border border-[#EADBCE] object-cover" />}
                         <div className="min-w-0 flex-1">
                           <p className="break-words text-sm font-medium text-[#2A0814]">{item.name}</p>
-                          <p className="text-xs text-[#4A1525]/65">Qty {item.quantity} · ₹{item.price.toLocaleString('en-IN')} each</p>
+                          <p className="text-xs text-[#4A1525]/65">Qty {item.quantity} · <span className="tabular-nums">₹{item.price.toLocaleString('en-IN')}</span> each</p>
                         </div>
-                        <span className="text-sm font-medium text-[#2A0814]">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                        <span className="text-sm font-medium text-[#2A0814]"><span className="tabular-nums">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span></span>
                       </div>
                     ))}
                     <div className="flex flex-wrap justify-between gap-2 border-t border-[#EADBCE] pt-3 text-xs">
                       <span className="text-[#4A1525]/70">Payment: {formatPaymentMethod(order.paymentMethod, order.paymentMethodDetails)} · {order.paymentStatus}</span>
-                      <span className="font-semibold text-[#2A0814]">Total ₹{order.amount.toLocaleString('en-IN')} {order.currency || 'INR'}</span>
+                      <span className="font-semibold text-[#2A0814]">Total <span className="tabular-nums">₹{order.amount.toLocaleString('en-IN')}</span> {order.currency || 'INR'}</span>
                     </div>
                     {order.customer?.address && <p className="text-xs text-[#4A1525]/70">Delivering to: {order.customer.address}</p>}
                     <button onClick={() => setSelectedOrderId(order.orderId || order.id)} className="no-print pt-1 text-xs font-medium text-[#2A0814] underline underline-offset-4">Order Details & Invoice</button>
@@ -512,8 +525,8 @@ export const AccountPage: React.FC = () => {
             <CircleHelp className="mt-1 h-5 w-5 text-[#C49A45]" />
             <div className="space-y-2 text-sm text-[#4A1525]">
               <p>For order assistance, delivery questions, or styling support:</p>
-              <a className="block text-[#2A0814] underline" href="mailto:care@tishnagii.com">care@tishnagii.com</a>
-              <a className="block text-[#2A0814] underline" href="tel:+919820012345">+91 98200 12345</a>
+              <a className="block text-[#2A0814] underline touch-manipulation" href="mailto:care@tishnagii.com">care@tishnagii.com</a>
+              <a className="block text-[#2A0814] underline touch-manipulation" href="tel:+919820012345">+91 98200 12345</a>
             </div>
           </div>
           <div className="flex flex-wrap gap-3">

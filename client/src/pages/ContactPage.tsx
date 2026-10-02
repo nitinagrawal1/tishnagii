@@ -105,7 +105,7 @@ export const ContactPage: React.FC = () => {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="Enter first name"
-                  className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs px-4 py-3.5 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none transition-colors"
+                  className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs px-4 py-3.5 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] transition-colors"
                 />
               </div>
 
@@ -119,7 +119,7 @@ export const ContactPage: React.FC = () => {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Enter last name"
-                  className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs px-4 py-3.5 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none transition-colors"
+                  className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs px-4 py-3.5 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] transition-colors"
                 />
               </div>
             </div>
@@ -136,7 +136,7 @@ export const ContactPage: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter e-mail address"
-                  className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs px-4 py-3.5 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none transition-colors"
+                  className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs px-4 py-3.5 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] transition-colors"
                 />
               </div>
 
@@ -149,7 +149,7 @@ export const ContactPage: React.FC = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="(123) 456-7890"
-                  className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs px-4 py-3.5 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none transition-colors"
+                  className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs px-4 py-3.5 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] transition-colors"
                 />
               </div>
             </div>
@@ -165,7 +165,7 @@ export const ContactPage: React.FC = () => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Enter message"
-                className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs p-4 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none transition-colors resize-y min-h-[140px]"
+                className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs p-4 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] transition-colors resize-y min-h-[140px]"
               />
             </div>
 
@@ -218,7 +218,7 @@ export const ContactPage: React.FC = () => {
             <div className="pt-2">
               <button
                 type="submit"
-                className="w-full py-4 px-6 border border-dashed border-[#FAF7F2]/40 hover:border-[#D4AE58] hover:bg-[#FAF7F2]/5 text-center text-xs sm:text-sm font-light tracking-widest text-[#FAF7F2] hover:text-[#D4AE58] uppercase rounded-xs transition-all cursor-pointer"
+                className="w-full py-4 px-6 border border-dashed border-[#FAF7F2]/40 hover:border-[#D4AE58] hover:bg-[#FAF7F2]/5 text-center text-xs sm:text-sm font-light tracking-widest text-[#FAF7F2] hover:text-[#D4AE58] uppercase rounded-xs transition-all cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
               >
                 Submit
               </button>

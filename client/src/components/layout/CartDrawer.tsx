@@ -58,7 +58,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-[#EADBCE] flex items-center justify-between bg-[#F4EFEA]">
           <div className="flex items-center gap-2">
-            <h2 className="font-serif text-xl font-medium text-[#2A0814]">Your Shopping Bag</h2>
+            <h2 className="font-serif text-xl font-medium text-[#2A0814] tabular-nums">Your Shopping Bag</h2>
             <span className="text-xs font-mono text-[#4A1525]/70 tabular-nums">
               ({cartCount} {cartCount === 1 ? 'piece' : 'pieces'})
             </span>
@@ -77,7 +77,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
           {amountNeededForFreeShipping > 0 ? (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span>Add <strong>₹{amountNeededForFreeShipping.toLocaleString('en-IN')}</strong> for Free Express Delivery</span>
+                <span>Add <strong><span className="tabular-nums">₹{amountNeededForFreeShipping.toLocaleString('en-IN')}</span></strong> for Free Express Delivery</span>
                 <span className="text-[#C49A45] font-mono tabular-nums">{Math.round(shippingProgress)}%</span>
               </div>
               <div className="w-full bg-[#1B060D] h-1.5 rounded-full overflow-hidden">
@@ -96,7 +96,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
         </div>
 
         {/* Cart Items List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4">
           {cart.length === 0 ? (
             <EmptyState
               icon={<ShoppingBag className="w-7 h-7" />}
@@ -170,7 +170,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
 
                     <div className="text-right font-mono tabular-nums">
                       <span className="text-xs font-semibold text-[#2A0814]">
-                        ₹{(product.price * quantity).toLocaleString('en-IN')}
+                        <span className="tabular-nums">₹{(product.price * quantity).toLocaleString('en-IN')}</span>
                       </span>
                     </div>
                   </div>
@@ -193,7 +193,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
                   </div>
                   <button
                     onClick={removeCoupon}
-                    className="text-xs text-red-700 hover:underline cursor-pointer"
+                    className="text-xs text-red-700 hover:underline cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                   >
                     Remove
                   </button>
@@ -205,11 +205,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
                     value={inputCoupon}
                     onChange={(e) => setInputCoupon(e.target.value)}
                     placeholder="Coupon (e.g. ROYAL10)"
-                    className="flex-1 bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] placeholder-[#4A1525]/40 rounded-xs uppercase focus:outline-none focus:border-[#C49A45]"
+                    className="flex-1 bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] placeholder-[#4A1525]/40 rounded-xs uppercase focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                   />
                   <button
                     type="submit"
-                    className="py-1.5 px-3 bg-[#2A0814] text-[#FAF7F2] text-xs font-medium rounded-xs hover:bg-[#380E1C] cursor-pointer"
+                    className="py-1.5 px-3 bg-[#2A0814] text-[#FAF7F2] text-xs font-medium rounded-xs hover:bg-[#380E1C] cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                   >
                     Apply
                   </button>
@@ -224,12 +224,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
             <div className="space-y-1.5 text-xs text-[#4A1525]/80 font-mono">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="tabular-nums">₹{subtotal.toLocaleString('en-IN')}</span>
+                <span className="tabular-nums"><span className="tabular-nums">₹{subtotal.toLocaleString('en-IN')}</span></span>
               </div>
               {discountAmount > 0 && (
                 <div className="flex justify-between text-emerald-800">
                   <span>Royal Privilege Discount</span>
-                  <span className="tabular-nums">-₹{discountAmount.toLocaleString('en-IN')}</span>
+                  <span className="tabular-nums">-<span className="tabular-nums">₹{discountAmount.toLocaleString('en-IN')}</span></span>
                 </div>
               )}
               <div className="flex justify-between">
@@ -241,7 +241,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
               <div className="flex justify-between text-sm font-semibold text-[#2A0814] pt-2 border-t border-[#EADBCE]">
                 <span>Total Amount</span>
                 <span className="tabular-nums font-mono text-base">
-                  ₹{finalTotal.toLocaleString('en-IN')}
+                  <span className="tabular-nums">₹{finalTotal.toLocaleString('en-IN')}</span>
                 </span>
               </div>
             </div>

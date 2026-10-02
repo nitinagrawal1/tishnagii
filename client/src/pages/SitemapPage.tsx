@@ -109,7 +109,7 @@ ${BLOG_POSTS.map(
                 >
                   {prod.name}
                 </button>
-                <span className="shrink-0 font-mono text-[#4A1525]/50">₹{prod.price}</span>
+                <span className="shrink-0 font-mono text-[#4A1525]/50"><span className="tabular-nums">₹{prod.price}</span></span>
               </li>
             ))}
           </ul>
@@ -166,7 +166,7 @@ ${BLOG_POSTS.map(
           </div>
           <button
             onClick={copySitemap}
-            className="flex items-center gap-1.5 px-3 py-1 bg-[#2A0814] text-[#FAF7F2] text-xs rounded-xs hover:bg-[#380E1C] cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 bg-[#2A0814] text-[#FAF7F2] text-xs rounded-xs hover:bg-[#380E1C] cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             <span>{copied ? 'Copied' : 'Copy XML'}</span>

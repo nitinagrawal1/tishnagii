@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useShop } from '../../context/ShopContext';
-import { X, ShieldCheck, Lock, ArrowRight, Truck } from 'lucide-react';
+import { X, ShieldCheck, Lock, ArrowRight, Truck, RefreshCw } from 'lucide-react';
 import type { CustomerAddress } from '../../services/account';
 import type { CustomerOrder } from '../../services/account';
 
@@ -412,7 +412,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 md:p-12 flex justify-center items-center">
+    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain p-4 sm:p-6 md:p-12 flex justify-center items-center">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
@@ -439,7 +439,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
           <button
             onClick={resetAndClose}
             aria-label="Close checkout"
-            className="p-1.5 text-[#2A0814] hover:text-[#C49A45] rounded-full hover:bg-[#EADBCE]/50 transition-colors cursor-pointer"
+            className="p-1.5 text-[#2A0814] hover:text-[#C49A45] rounded-full hover:bg-[#EADBCE]/50 transition-colors cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
           >
             <X className="w-5 h-5" />
           </button>
@@ -460,7 +460,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                     placeholder="e.g. Gayatri Devi"
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus:border-[#C49A45] rounded-xs"
+                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
                   />
                   {errors.fullName && (
                     <span className="text-[10px] text-red-600">{errors.fullName}</span>
@@ -477,7 +477,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="e.g. 98200 12345"
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus:border-[#C49A45] rounded-xs"
+                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
                   />
                   {errors.phone && (
                     <span className="text-[10px] text-red-600">{errors.phone}</span>
@@ -495,7 +495,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="name@domain.com"
-                  className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus:border-[#C49A45] rounded-xs"
+                  className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
                 />
                 {errors.email && (
                   <span className="text-[10px] text-red-600">{errors.email}</span>
@@ -525,7 +525,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                         country: address.country || 'India',
                       }));
                     }}
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus:border-[#C49A45] rounded-xs"
+                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
                   >
                     {savedAddresses.map((address) => (
                       <option key={address.id} value={address.id}>
@@ -547,7 +547,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   placeholder="House/Villa No., Street, Landmark..."
-                  className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus:border-[#C49A45] rounded-xs"
+                  className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
                 />
                 {errors.address && (
                   <span className="text-[10px] text-red-600">{errors.address}</span>
@@ -563,7 +563,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                     placeholder="e.g. New Delhi"
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus:border-[#C49A45] rounded-xs"
+                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
                   />
                   {errors.city && (
                     <span className="text-[10px] text-red-600">{errors.city}</span>
@@ -575,7 +575,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                   <select
                     value={formData.state}
                     onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-2 py-2 text-xs text-[#2A0814] focus:outline-none focus:border-[#C49A45] rounded-xs"
+                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-2 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
                   >
                     <option value="Delhi">Delhi NCR</option>
                     <option value="Maharashtra">Maharashtra</option>
@@ -601,7 +601,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                     value={formData.pinCode}
                     onChange={(e) => setFormData({ ...formData, pinCode: e.target.value })}
                     placeholder="110001"
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus:border-[#C49A45] rounded-xs font-mono"
+                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs font-mono"
                   />
                   {errors.pinCode && (
                     <span className="text-[10px] text-red-600">{errors.pinCode}</span>
@@ -615,7 +615,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                     required
                     value={formData.country}
                     onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus:border-[#C49A45] rounded-xs"
+                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
                   />
                   {errors.country && <span className="text-[10px] text-red-600">{errors.country}</span>}
                 </div>
@@ -625,13 +625,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
               <div className="p-3 bg-[#F4EFEA] rounded-xs border border-[#EADBCE] flex items-center justify-between text-xs font-mono">
                 <span className="text-[#4A1525]">Total payable ({cart.length} items):</span>
                 <span className="font-semibold text-sm text-[#2A0814]">
-                  ₹{finalTotal.toLocaleString('en-IN')}
+                  <span className="tabular-nums">₹{finalTotal.toLocaleString('en-IN')}</span>
                 </span>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs transition-all flex items-center justify-center gap-2 cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
               >
                 <span>Continue to Payment</span>
                 <ArrowRight className="w-4 h-4" />
@@ -749,12 +749,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
               <div className="p-3 bg-[#F4EFEA] border border-[#EADBCE] rounded-xs space-y-1 text-xs font-mono">
                 <div className="flex justify-between text-[#4A1525]/80">
                   <span>Cart Subtotal</span>
-                  <span>₹{subtotal.toLocaleString('en-IN')}</span>
+                  <span><span className="tabular-nums">₹{subtotal.toLocaleString('en-IN')}</span></span>
                 </div>
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-800">
                     <span>Discount Applied</span>
-                    <span>-₹{discountAmount.toLocaleString('en-IN')}</span>
+                    <span>-<span className="tabular-nums">₹{discountAmount.toLocaleString('en-IN')}</span></span>
                   </div>
                 )}
                 <div className="flex justify-between text-[#4A1525]/80">
@@ -763,7 +763,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                 </div>
                 <div className="flex justify-between text-[#2A0814] font-bold pt-1 border-t border-[#EADBCE]">
                   <span>Total Amount Due</span>
-                  <span className="text-sm">₹{finalTotal.toLocaleString('en-IN')}</span>
+                  <span className="text-sm"><span className="tabular-nums">₹{finalTotal.toLocaleString('en-IN')}</span></span>
                 </div>
               </div>
 
@@ -778,15 +778,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 py-3 bg-[#2A0814] hover:bg-[#380E1C] disabled:opacity-60 text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-1 py-3 bg-[#2A0814] hover:bg-[#380E1C] disabled:opacity-60 text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                 >
-                  {isSubmitting ? (
-                    <span>Opening Secure Checkout...</span>
-                  ) : (
-                    <span>
-                      {formData.paymentMethod === 'cod' ? 'Place COD Order' : 'Pay Securely'} · ₹{finalTotal.toLocaleString('en-IN')}
-                    </span>
-                  )}
+                  {isSubmitting && <RefreshCw className="h-4 w-4 animate-spin" />}
+                  <span>
+                    {formData.paymentMethod === 'cod' ? 'Place COD Order' : 'Pay Securely'} · <span className="tabular-nums">₹{finalTotal.toLocaleString('en-IN')}</span>
+                  </span>
                 </button>
               </div>
             </form>

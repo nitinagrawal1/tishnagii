@@ -7,11 +7,11 @@ import {
 } from '@firebase/auth';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyDQHeABBJjH_g8-b7wCqHe8dnoapQv3bgE',
-  authDomain: 'tishnagii.firebaseapp.com',
-  projectId: 'tishnagii',
-  messagingSenderId: '863250394929',
-  appId: '1:863250394929:web:c78ad0baf546dd32d3ca10',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 export const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);

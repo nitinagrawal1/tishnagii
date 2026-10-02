@@ -195,7 +195,7 @@ export const HomePage: React.FC = () => {
               href="https://instagram.com/tishnagii"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3.5 group cursor-pointer"
+              className="flex items-center gap-3.5 group cursor-pointer touch-manipulation"
             >
               {/* Instagram Icon */}
               <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center p-0.5 shadow-md group-hover:scale-105 transition-transform shrink-0">

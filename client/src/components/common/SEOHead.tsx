@@ -109,7 +109,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({ page, product, post, categoryN
       description = 'Your TISHNAGII order details and invoice.';
     } else if (page === 'shipping') {
       title = 'Shipping & Delivery Information | TISHNAGII';
-      description = 'Free insured express shipping across India on orders over ₹1,499. Worldwide express transit with DHL.';
+      description = 'Free insured express shipping across India on orders over <span className="tabular-nums">₹1,499</span>. Worldwide express transit with DHL.';
     } else if (page === 'returns') {
       title = 'Hassle-Free Returns & 7-Day Exchange | TISHNAGII';
       description = 'Learn about our 7-day return policy, doorstep reverse pick-up, and 100% money-back guarantee.';

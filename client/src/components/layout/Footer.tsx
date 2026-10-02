@@ -30,7 +30,7 @@ export const Footer: React.FC = () => {
               </div>
               <div>
                 <h4 className="text-sm font-serif tracking-wide text-[#FAF7F2]">Insured Express Delivery</h4>
-                <p className="text-xs text-[#FAF7F2]/60 mt-0.5">Complimentary pan-India over ₹1,499</p>
+                <p className="text-xs text-[#FAF7F2]/60 mt-0.5">Complimentary pan-India over <span className="tabular-nums">₹1,499</span></p>
               </div>
             </div>
 
@@ -73,14 +73,14 @@ export const Footer: React.FC = () => {
           
           {/* Brand Story Column (2 cols wide on desktop) */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="cursor-pointer" onClick={() => navigateTo('home')}>
+            <button type="button" className="block text-left cursor-pointer touch-manipulation focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0" onClick={() => navigateTo('home')}>
               <span className="font-serif text-3xl font-medium tracking-[0.25em] text-[#FAF7F2]">
                 TISHNAGII
               </span>
               <div className="text-xs tracking-[0.25em] text-[#C49A45] mt-1 font-light">
                 तिश्नगी · ETERNAL YEARNING FOR BEAUTY
               </div>
-            </div>
+            </button>
 
             <p className="text-sm text-[#FAF7F2]/70 leading-relaxed max-w-sm">
               Born from the poetic Urdu word <em className="text-[#C49A45] font-serif not-italic">Tishnagi</em>, representing a deep, insatiable thirst for timeless art. We unite 400-year-old Rajasthani karigar traditions with contemporary comfort, making regal Kundan, Polki, and temple jewellery effortless to wear and cherish.
@@ -90,11 +90,11 @@ export const Footer: React.FC = () => {
               <div>Atelier: Johari Bazaar & C-Scheme, Jaipur, Rajasthan, India</div>
               <div>
                 Client Care:{' '}
-                <a href="mailto:care@tishnagii.com" className="text-[#D4AE58] hover:underline">
+                <a href="mailto:care@tishnagii.com" className="text-[#D4AE58] hover:underline touch-manipulation">
                   care@tishnagii.com
                 </a>{' '}
                 ·{' '}
-                <a href="tel:+919820012345" className="text-[#D4AE58] hover:underline">
+                <a href="tel:+919820012345" className="text-[#D4AE58] hover:underline touch-manipulation">
                   +91 98200 12345
                 </a>
               </div>
@@ -108,52 +108,34 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2 text-sm text-[#FAF7F2]/80">
               <li>
-                <button
-                  onClick={() => navigateTo('shop', undefined, 'necklaces')}
-                  className="hover:text-[#FAF7F2] hover:underline transition-colors text-left"
-                >
+                <a href="/shop" onClick={(e) => { e.preventDefault(); navigateTo('shop', undefined, 'necklaces'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Necklaces & Chokers
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  onClick={() => navigateTo('shop', undefined, 'earrings')}
-                  className="hover:text-[#FAF7F2] hover:underline transition-colors text-left"
-                >
+                <a href="/shop" onClick={(e) => { e.preventDefault(); navigateTo('shop', undefined, 'earrings'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Earrings & Temple Jhumkas
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  onClick={() => navigateTo('shop', undefined, 'bridal-sets')}
-                  className="hover:text-[#FAF7F2] hover:underline transition-colors text-left"
-                >
+                <a href="/shop" onClick={(e) => { e.preventDefault(); navigateTo('shop', undefined, 'bridal-sets'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Royal Bridal Suites
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  onClick={() => navigateTo('shop', undefined, 'bangles')}
-                  className="hover:text-[#FAF7F2] hover:underline transition-colors text-left"
-                >
+                <a href="/shop" onClick={(e) => { e.preventDefault(); navigateTo('shop', undefined, 'bangles'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Bangles & Screw Kadas
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  onClick={() => navigateTo('shop', undefined, 'maang-tikka')}
-                  className="hover:text-[#FAF7F2] hover:underline transition-colors text-left"
-                >
+                <a href="/shop" onClick={(e) => { e.preventDefault(); navigateTo('shop', undefined, 'maang-tikka'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Maang Tikka & Passa
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  onClick={() => navigateTo('shop', undefined, 'rings')}
-                  className="hover:text-[#FAF7F2] hover:underline transition-colors text-left"
-                >
+                <a href="/shop" onClick={(e) => { e.preventDefault(); navigateTo('shop', undefined, 'rings'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Cocktail Rings
-                </button>
+                </a>
               </li>
             </ul>
           </div>
@@ -165,52 +147,34 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2 text-sm text-[#FAF7F2]/80">
               <li>
-                <button
-                  onClick={() => navigateTo('contact')}
-                  className="hover:text-[#FAF7F2] hover:underline transition-colors text-left"
-                >
+                <a href="/contact" onClick={(e) => { e.preventDefault(); navigateTo('contact'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Bespoke Bridal Concierge
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  onClick={() => navigateTo('faq')}
-                  className="hover:text-[#FAF7F2] hover:underline transition-colors text-left"
-                >
+                <a href="/faq" onClick={(e) => { e.preventDefault(); navigateTo('faq'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Frequently Asked Questions
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  onClick={() => navigateTo('shipping')}
-                  className="hover:text-[#FAF7F2] hover:underline transition-colors text-left"
-                >
+                <a href="/shipping" onClick={(e) => { e.preventDefault(); navigateTo('shipping'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Shipping & Pan-India Delivery
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  onClick={() => navigateTo('returns')}
-                  className="hover:text-[#FAF7F2] hover:underline transition-colors text-left"
-                >
+                <a href="/returns" onClick={(e) => { e.preventDefault(); navigateTo('returns'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   7-Day Returns & Refunds
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  onClick={() => navigateTo('about')}
-                  className="hover:text-[#FAF7F2] hover:underline transition-colors text-left"
-                >
+                <a href="/about" onClick={(e) => { e.preventDefault(); navigateTo('about'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Our Karigars & Craft Story
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  onClick={() => navigateTo('blog')}
-                  className="hover:text-[#FAF7F2] hover:underline transition-colors text-left"
-                >
+                <a href="/blog" onClick={(e) => { e.preventDefault(); navigateTo('blog'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Journal
-                </button>
+                </a>
               </li>
             </ul>
           </div>
@@ -238,12 +202,12 @@ export const Footer: React.FC = () => {
                     onChange={(e) => setNewsletterEmail(e.target.value)}
                     placeholder="Enter your email"
                     aria-label="Email for newsletter"
-                    className="w-full bg-[#1B060D] border border-[#380E1C] px-3 py-2 text-xs text-[#FAF7F2] placeholder-[#FAF7F2]/40 rounded focus:outline-none focus:border-[#C49A45]"
+                    className="w-full bg-[#1B060D] border border-[#380E1C] px-3 py-2 text-xs text-[#FAF7F2] placeholder-[#FAF7F2]/40 rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                   />
                   <button
                     type="submit"
                     aria-label="Subscribe to newsletter"
-                    className="absolute right-1 top-1 bottom-1 px-3 bg-[#C49A45] text-[#2A0814] font-medium text-xs rounded hover:bg-[#D4AE58] transition-colors flex items-center cursor-pointer"
+                    className="absolute right-1 top-1 bottom-1 px-3 bg-[#C49A45] text-[#2A0814] font-medium text-xs rounded hover:bg-[#D4AE58] transition-colors flex items-center cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                   >
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
@@ -261,26 +225,17 @@ export const Footer: React.FC = () => {
           <div className="flex flex-wrap items-center gap-4">
             <span>© {new Date().getFullYear()} TISHNAGII JEWELS LLP. All rights reserved.</span>
             <span>·</span>
-            <button
-              onClick={() => navigateTo('privacy')}
-              className="hover:text-[#FAF7F2] transition-colors underline"
-            >
+            <a href="/privacy" onClick={(e) => { e.preventDefault(); navigateTo('privacy'); }} className="hover:text-[#FAF7F2] transition-colors underline">
               Privacy Policy
-            </button>
+            </a>
             <span>·</span>
-            <button
-              onClick={() => navigateTo('terms')}
-              className="hover:text-[#FAF7F2] transition-colors underline"
-            >
+            <a href="/terms" onClick={(e) => { e.preventDefault(); navigateTo('terms'); }} className="hover:text-[#FAF7F2] transition-colors underline">
               Terms of Service
-            </button>
+            </a>
             <span>·</span>
-            <button
-              onClick={() => navigateTo('sitemap')}
-              className="hover:text-[#FAF7F2] transition-colors underline"
-            >
+            <a href="/sitemap" onClick={(e) => { e.preventDefault(); navigateTo('sitemap'); }} className="hover:text-[#FAF7F2] transition-colors underline">
               Sitemap & Search Index
-            </button>
+            </a>
           </div>
 
           <div className="text-[11px] text-[#FAF7F2]/60">

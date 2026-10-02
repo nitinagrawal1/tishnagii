@@ -5,10 +5,8 @@ import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 export const ToastContainer: React.FC = () => {
   const { toasts, removeToast } = useShop();
 
-  if (toasts.length === 0) return null;
-
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none">
+    <div aria-live="polite" aria-atomic="false" className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none">
       {toasts.map((toast) => (
         <div
           key={toast.id}

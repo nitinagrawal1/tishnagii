@@ -31,7 +31,7 @@ export const WishlistPage: React.FC = () => {
         {wishlist.length > 0 && (
           <button
             onClick={handleAddAllToCart}
-            className="py-2.5 px-6 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-wider font-semibold rounded-xs shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer self-start sm:self-auto"
+            className="py-2.5 px-6 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-wider font-semibold rounded-xs shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer self-start sm:self-auto touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
           >
             <ShoppingBag className="w-4 h-4" />
             <span>Add All To Bag</span>

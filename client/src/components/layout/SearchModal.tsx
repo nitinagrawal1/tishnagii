@@ -57,7 +57,7 @@ export const SearchModal: React.FC = () => {
   const popularSearches = ['Kundan Choker', 'Temple Jhumkas', 'Bridal Suite', 'Meenakari Kadas', 'Chaand Tikka'];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 md:p-20 flex justify-center items-start">
+    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain p-4 sm:p-6 md:p-20 flex justify-center items-start">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
@@ -74,7 +74,7 @@ export const SearchModal: React.FC = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search polki chokers, temple jhumkas, bridal sets..."
-            className="w-full bg-transparent text-sm sm:text-base text-[#2A0814] placeholder-[#4A1525]/40 focus:outline-none"
+            className="w-full bg-transparent text-sm sm:text-base text-[#2A0814] placeholder-[#4A1525]/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45]"
           />
           {query && (
             <button
@@ -136,7 +136,7 @@ export const SearchModal: React.FC = () => {
 
         {/* Results view when query is typed */}
         {query && (
-          <div className="max-h-[60vh] overflow-y-auto p-4 space-y-6">
+          <div className="max-h-[60vh] overflow-y-auto overscroll-contain p-4 space-y-6">
             {/* Products matches */}
             <div>
               <div className="flex items-center justify-between pb-2 border-b border-[#EADBCE]">
@@ -173,7 +173,7 @@ export const SearchModal: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right font-mono tabular-nums text-xs font-semibold text-[#2A0814]">
-                        ₹{prod.price.toLocaleString('en-IN')}
+                        <span className="tabular-nums">₹{prod.price.toLocaleString('en-IN')}</span>
                       </div>
                     </div>
                   ))}

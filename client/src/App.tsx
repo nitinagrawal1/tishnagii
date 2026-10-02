@@ -53,7 +53,7 @@ const AppContent: React.FC = () => {
     : null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF7F2] text-[#1C1819] selection:bg-[#380E1C] selection:text-[#FAF7F2]">
+    <div className="min-h-screen flex flex-col pb-[env(safe-area-inset-bottom)] bg-[#FAF7F2] text-[#1C1819] selection:bg-[#380E1C] selection:text-[#FAF7F2]">
       {/* Dynamic SEO & JSON-LD Structured Data */}
       <SEOHead
         page={currentPage}

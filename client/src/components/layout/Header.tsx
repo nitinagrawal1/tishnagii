@@ -41,7 +41,7 @@ export const Header: React.FC = () => {
       {!isBannerDismissed && (
         <div className="bg-[#2A0814] text-[#FAF7F2] text-xs py-2 px-4 border-b border-[#380E1C] flex items-center justify-between">
           <div className="mx-auto text-center font-normal tracking-wide flex items-center gap-2">
-            <span>Complimentary Insured Express Delivery across India on orders above ₹1,499</span>
+            <span>Complimentary Insured Express Delivery across India on orders above <span className="tabular-nums">₹1,499</span></span>
             <span className="hidden sm:inline opacity-40">·</span>
             <span className="hidden sm:inline text-[#D4AE58]">Signature Velvet Keepsake Box with every order</span>
           </div>
@@ -74,9 +74,9 @@ export const Header: React.FC = () => {
                 e.preventDefault();
                 navigateTo('home');
               }}
-              className="group flex min-w-0 flex-col items-start text-left focus:outline-none"
+              className="group flex min-w-0 flex-col items-start text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45]"
             >
-              <span className="whitespace-nowrap font-serif text-xl font-medium leading-tight tracking-[0.12em] text-[#2A0814] transition-colors group-hover:text-[#4A1525] sm:text-3xl sm:tracking-[0.22em]">
+              <span className="whitespace-nowrap font-serif text-xl font-medium leading-tight tracking-[0.12em] text-[#2A0814] transition-colors group-hover:text-[#4A1525] sm:text-3xl sm:tracking-[0.22em] tabular-nums">
                 TISHNAGII
               </span>
               <span className="-mt-0.5 whitespace-nowrap text-[8px] font-light tracking-[0.15em] text-[#C49A45] sm:text-[10px] sm:tracking-[0.3em]">
@@ -319,7 +319,7 @@ export const Header: React.FC = () => {
             <div className="pt-6 border-t border-[#EADBCE] text-xs text-[#4A1525]/70 space-y-2">
               <div className="flex items-center justify-between">
                 <span>Direct WhatsApp Concierge:</span>
-                <a href="tel:+919820012345" className="font-medium text-[#2A0814] hover:text-[#C49A45] transition-colors">
+                <a href="tel:+919820012345" className="font-medium text-[#2A0814] hover:text-[#C49A45] transition-colors touch-manipulation">
                   +91 98200 12345
                 </a>
               </div>

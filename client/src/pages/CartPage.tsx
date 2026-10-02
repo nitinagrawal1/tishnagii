@@ -69,7 +69,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
         {amountNeeded > 0 ? (
           <div className="space-y-1.5 flex-1 max-w-xl">
             <div className="flex justify-between">
-              <span>Add <strong>₹{amountNeeded.toLocaleString('en-IN')}</strong> more for Free Pan-India Express Delivery</span>
+              <span>Add <strong><span className="tabular-nums">₹{amountNeeded.toLocaleString('en-IN')}</span></strong> more for Free Pan-India Express Delivery</span>
               <span className="text-[#C49A45] font-mono tabular-nums">{Math.round(progressPercent)}%</span>
             </div>
             <div className="w-full bg-[#1B060D] h-1.5 rounded-full overflow-hidden">
@@ -112,7 +112,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
                       {product.name}
                     </h3>
                     <p className="text-xs text-[#4A1525]/60 font-mono tabular-nums">
-                      ₹{product.price.toLocaleString('en-IN')} each
+                      <span className="tabular-nums">₹{product.price.toLocaleString('en-IN')}</span> each
                     </p>
                   </div>
                 </div>
@@ -142,7 +142,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
                   {/* Line Total */}
                   <div className="text-right font-mono tabular-nums min-w-[90px]">
                     <span className="text-sm font-semibold text-[#2A0814]">
-                      ₹{(product.price * quantity).toLocaleString('en-IN')}
+                      <span className="tabular-nums">₹{(product.price * quantity).toLocaleString('en-IN')}</span>
                     </span>
                   </div>
 
@@ -171,7 +171,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
 
         {/* Order Summary Module (4 cols, sticky) */}
         <div className="lg:col-span-4 bg-[#F4EFEA] p-6 border border-[#EADBCE] rounded-xs space-y-6">
-          <h3 className="font-serif text-xl font-medium text-[#2A0814] pb-3 border-b border-[#EADBCE]">
+          <h3 className="font-serif text-xl font-medium text-[#2A0814] pb-3 border-b border-[#EADBCE] tabular-nums">
             Order Summary
           </h3>
 
@@ -185,7 +185,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
                 </div>
                 <button
                   onClick={removeCoupon}
-                  className="text-xs text-red-700 hover:underline cursor-pointer"
+                  className="text-xs text-red-700 hover:underline cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                 >
                   Remove
                 </button>
@@ -198,11 +198,11 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
                     value={inputCoupon}
                     onChange={(e) => setInputCoupon(e.target.value)}
                     placeholder="Coupon (e.g. ROYAL10)"
-                    className="flex-1 bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] uppercase rounded-xs focus:outline-none focus:border-[#C49A45]"
+                    className="flex-1 bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] uppercase rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                   />
                   <button
                     type="submit"
-                    className="py-2 px-4 bg-[#2A0814] text-[#FAF7F2] text-xs font-semibold rounded-xs hover:bg-[#380E1C] cursor-pointer"
+                    className="py-2 px-4 bg-[#2A0814] text-[#FAF7F2] text-xs font-semibold rounded-xs hover:bg-[#380E1C] cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                   >
                     Apply
                   </button>
@@ -221,12 +221,12 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
           <div className="space-y-2.5 text-xs text-[#4A1525]/80 font-mono">
             <div className="flex justify-between">
               <span>Cart Subtotal</span>
-              <span className="tabular-nums">₹{subtotal.toLocaleString('en-IN')}</span>
+              <span className="tabular-nums"><span className="tabular-nums">₹{subtotal.toLocaleString('en-IN')}</span></span>
             </div>
             {discountAmount > 0 && (
               <div className="flex justify-between text-emerald-800">
                 <span>Royal Privilege Discount</span>
-                <span className="tabular-nums">-₹{discountAmount.toLocaleString('en-IN')}</span>
+                <span className="tabular-nums">-<span className="tabular-nums">₹{discountAmount.toLocaleString('en-IN')}</span></span>
               </div>
             )}
             <div className="flex justify-between">
@@ -237,7 +237,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
             </div>
             <div className="flex justify-between text-[#2A0814] font-semibold text-base pt-3 border-t border-[#EADBCE]">
               <span>Estimated Total</span>
-              <span className="tabular-nums font-mono">₹{finalTotal.toLocaleString('en-IN')}</span>
+              <span className="tabular-nums font-mono"><span className="tabular-nums">₹{finalTotal.toLocaleString('en-IN')}</span></span>
             </div>
           </div>
 
@@ -245,7 +245,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
           <div className="space-y-3">
             <button
               onClick={onOpenCheckout}
-              className="w-full py-3.5 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
             >
               <span>Proceed to Checkout</span>
               <ArrowRight className="w-4 h-4" />

@@ -61,7 +61,7 @@ export const FAQPage: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search e.g. tarnish, COD, shipping time, hypoallergenic..."
-            className="w-full bg-[#FAF7F2] border border-[#EADBCE] pl-10 pr-4 py-2.5 text-xs text-[#2A0814] placeholder-[#4A1525]/40 rounded-xs focus:outline-none focus:border-[#C49A45]"
+            className="w-full bg-[#FAF7F2] border border-[#EADBCE] pl-10 pr-4 py-2.5 text-xs text-[#2A0814] placeholder-[#4A1525]/40 rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
           />
         </div>
 

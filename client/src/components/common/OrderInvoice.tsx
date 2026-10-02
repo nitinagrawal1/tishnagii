@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Download, Printer } from 'lucide-react';
+import { ArrowLeft, Download, Printer, RefreshCw } from 'lucide-react';
 import type { CustomerOrder } from '../../services/account';
 
 interface OrderInvoiceProps {
@@ -166,7 +166,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ order, onBack }) => 
     <section className="mx-auto max-w-4xl space-y-5">
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
         {onBack ? (
-          <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-[#4A1525] hover:text-[#2A0814]">
+          <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-[#4A1525] hover:text-[#2A0814] touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0">
             <ArrowLeft className="h-4 w-4" /> Back to orders
           </button>
         ) : <span />}
@@ -175,19 +175,19 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ order, onBack }) => 
             <Printer className="h-4 w-4" /> Print Invoice
           </button>
           <button disabled={isDownloading} onClick={() => void downloadInvoice()} className="inline-flex items-center gap-2 bg-[#2A0814] px-4 py-2.5 text-sm text-[#FAF7F2] transition-colors hover:bg-[#380E1C] disabled:opacity-60">
-            <Download className="h-4 w-4" /> {isDownloading ? 'Preparing...' : 'Download Invoice'}
+            {isDownloading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download Invoice
           </button>
         </div>
       </div>
 
-      <article className="invoice-print-area border border-[#EADBCE] bg-[#FAF7F2]">
+      <article className="invoice-print-area border border-[#EADBCE] bg-[#FAF7F2] touch-manipulation">
         <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[#EADBCE] bg-[#F4EFEA] p-5 sm:p-7">
           <div>
             <p className="font-serif text-2xl font-semibold tracking-[0.18em] text-[#2A0814]">TISHNAGII</p>
             <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-[#C49A45]">Artisanal Jewellery · Jaipur, India</p>
           </div>
           <div className="text-right">
-            <h2 className="font-serif text-xl text-[#2A0814]">Invoice</h2>
+            <h2 className="font-serif text-xl text-[#2A0814] tabular-nums">Invoice</h2>
             <p className="mt-1 text-xs text-[#4A1525]/70">{invoiceDate}</p>
             <p className="text-xs font-medium text-[#2A0814]">{order.orderId}</p>
           </div>

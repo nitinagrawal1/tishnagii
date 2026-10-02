@@ -33,7 +33,7 @@ export const CookieConsent: React.FC = () => {
   return (
     <aside
       aria-label="Cookie & Privacy Consent"
-      className="fixed bottom-4 left-4 right-4 md:left-6 md:right-auto md:max-w-md z-40 bg-[#2A0814] text-[#FAF7F2] border border-[#C49A45]/40 rounded-xs shadow-2xl p-4 transition-all animate-fade-in"
+      className="fixed bottom-4 left-4 right-4 md:left-6 md:right-auto md:max-w-md z-40 bg-[#2A0814] text-[#FAF7F2] border border-[#C49A45]/40 rounded-xs shadow-2xl p-4 transition-all animate-fade-in touch-manipulation"
     >
       <div className="flex items-start gap-3">
         <ShieldCheck className="w-5 h-5 text-[#C49A45] shrink-0 mt-0.5" />

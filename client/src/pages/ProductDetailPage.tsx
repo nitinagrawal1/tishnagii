@@ -177,11 +177,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
           <div className="p-4 bg-[#F4EFEA] border border-[#EADBCE] rounded-xs flex items-baseline justify-between">
             <div className="flex items-baseline gap-3">
               <span className="font-mono text-2xl sm:text-3xl font-semibold text-[#2A0814] tabular-nums">
-                ₹{product.price.toLocaleString('en-IN')}
+                <span className="tabular-nums">₹{product.price.toLocaleString('en-IN')}</span>
               </span>
               {product.originalPrice > product.price && (
                 <span className="font-mono text-sm text-[#4A1525]/50 line-through tabular-nums">
-                  ₹{product.originalPrice.toLocaleString('en-IN')}
+                  <span className="tabular-nums">₹{product.originalPrice.toLocaleString('en-IN')}</span>
                 </span>
               )}
             </div>
@@ -454,7 +454,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                       value={newReviewAuthor}
                       onChange={(e) => setNewReviewAuthor(e.target.value)}
                       placeholder="e.g. Radhika M."
-                      className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus:border-[#C49A45]"
+                      className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                     />
                   </div>
 
@@ -465,7 +465,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                       value={newReviewCity}
                       onChange={(e) => setNewReviewCity(e.target.value)}
                       placeholder="e.g. Mumbai"
-                      className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus:border-[#C49A45]"
+                      className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                     />
                   </div>
 
@@ -474,7 +474,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                     <select
                       value={newReviewRating}
                       onChange={(e) => setNewReviewRating(Number(e.target.value))}
-                      className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus:border-[#C49A45]"
+                      className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                     >
                       <option value={5}>5 Stars - Royal Perfection</option>
                       <option value={4}>4 Stars - Very Satisfied</option>
@@ -490,13 +490,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                       value={newReviewComment}
                       onChange={(e) => setNewReviewComment(e.target.value)}
                       placeholder="How did the piece look and feel during your event?"
-                      className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus:border-[#C49A45]"
+                      className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-wider font-semibold rounded-xs transition-colors cursor-pointer"
+                    className="w-full py-2.5 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-wider font-semibold rounded-xs transition-colors cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                   >
                     Submit Review
                   </button>
@@ -540,7 +540,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="break-words text-[11px] leading-tight text-[#4A1525]/70">{product.name}</span>
           <span className="font-mono text-sm font-bold text-[#2A0814] tabular-nums">
-            ₹{product.price.toLocaleString('en-IN')}
+            <span className="tabular-nums">₹{product.price.toLocaleString('en-IN')}</span>
           </span>
         </div>
         <button
