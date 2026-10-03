@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { sendPasswordResetEmail, updateEmail, updateProfile } from '@firebase/auth';
-import { ArrowRight, Check, CircleHelp, MapPin, PackageCheck, Plus, Trash2, UserRound } from 'lucide-react';
+import { ArrowRight, Check, CircleHelp, MapPin, PackageCheck, Plus, RefreshCw, Trash2, UserRound } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
 import { auth } from '../firebase';
 import { OrderInvoice } from '../components/common/OrderInvoice';
+import { handleInternalLinkClick } from '../utils/navigation';
+import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
 import {
   deleteCustomerAddress,
   getCustomerAddresses,
@@ -60,7 +63,8 @@ const formatOrderDate = (value: CustomerOrder['createdAt']) => {
       ? value
       : 'toDate' in value && typeof value.toDate === 'function'
         ? value.toDate()
-        : new Date();
+        : null;
+  if (!date || Number.isNaN(date.getTime())) return 'Date unavailable';
   return new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
 };
 
@@ -83,13 +87,29 @@ export const AccountPage: React.FC = () => {
     const tab = params.get('tab') as AccountSection;
     return sections.some(s => s.id === tab) ? tab : 'profile';
   });
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return new URLSearchParams(window.location.search).get('order');
+  });
 
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
     const url = new URL(window.location.href);
     url.searchParams.set('tab', section);
-    window.history.replaceState({}, '', url);
-  }, [section]);
+    if (selectedOrderId) url.searchParams.set('order', selectedOrderId);
+    else url.searchParams.delete('order');
+    window.history.replaceState(window.history.state, '', url);
+  }, [section, selectedOrderId]);
+  React.useEffect(() => {
+    const restoreAccountState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab') as AccountSection;
+      setSection(sections.some((item) => item.id === tab) ? tab : 'profile');
+      setSelectedOrderId(params.get('order'));
+    };
+    window.addEventListener('popstate', restoreAccountState);
+    return () => window.removeEventListener('popstate', restoreAccountState);
+  }, []);
   const [profile, setProfile] = useState<CustomerProfile>(initialProfile);
   const [email, setEmail] = useState('');
   const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
@@ -97,14 +117,33 @@ export const AccountPage: React.FC = () => {
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersError, setOrdersError] = useState('');
   const [ordersLoadedForUid, setOrdersLoadedForUid] = useState('');
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const ordersContainerRef = useRef<HTMLDivElement>(null);
+  const ordersVirtualizer = useVirtualizer({
+    count: orders.length,
+    getScrollElement: () => ordersContainerRef.current,
+    estimateSize: () => 300,
+    measureElement: (element) => element.getBoundingClientRect().height + 16,
+    overscan: 5,
+    enabled: orders.length > 50,
+  });
   const [addressForm, setAddressForm] = useState<Omit<CustomerAddress, 'id'>>(initialAddress);
+  const savedProfileRef = useRef<CustomerProfile>(initialProfile);
+  const savedEmailRef = useRef('');
+  const addressBaselineRef = useRef<Omit<CustomerAddress, 'id'>>(initialAddress);
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingAddress, setIsSavingAddress] = useState(false);
   const [pageError, setPageError] = useState('');
+  const hasProfileDraft = JSON.stringify(profile) !== JSON.stringify(savedProfileRef.current)
+    || email.trim() !== savedEmailRef.current;
+  const hasAddressDraft = showAddressForm
+    && JSON.stringify(addressForm) !== JSON.stringify(addressBaselineRef.current);
+  const { confirmDiscard, markClean } = useUnsavedChanges(
+    hasProfileDraft || hasAddressDraft,
+    'account-draft',
+  );
 
   useEffect(() => {
     if (!user) {
@@ -132,18 +171,21 @@ export const AccountPage: React.FC = () => {
       const accountErrors: string[] = [];
       if (profileResult.status === 'fulfilled') {
         const savedProfile = profileResult.value;
-        setProfile({
+        const nextProfile = {
           ...initialProfile,
           ...savedProfile,
           fullName: savedProfile.fullName || user.displayName || '',
           photoURL: savedProfile.photoURL || user.photoURL || '',
-        });
+        };
+        setProfile(nextProfile);
+        savedProfileRef.current = nextProfile;
       } else {
         accountErrors.push(getAccountDataErrorMessage(profileResult.reason, 'load your profile'));
       }
 
       if (addressesResult.status === 'fulfilled') setAddresses(addressesResult.value);
       else accountErrors.push(getAccountDataErrorMessage(addressesResult.reason, 'load saved addresses'));
+      savedEmailRef.current = user.email || '';
       setPageError(accountErrors.join('\n'));
 
       setIsLoading(false);
@@ -186,6 +228,9 @@ export const AccountPage: React.FC = () => {
       await updateProfile(user, { displayName: nextProfile.fullName, photoURL: nextProfile.photoURL || null });
       await saveCustomerProfile(user.uid, nextProfile);
       setProfile(nextProfile);
+      savedProfileRef.current = nextProfile;
+      savedEmailRef.current = nextEmail;
+      markClean();
       showToast('Your profile has been updated.');
     } catch (error) {
       setPageError(error instanceof Error ? error.message : 'Unable to save your profile. Please try again.');
@@ -209,8 +254,21 @@ export const AccountPage: React.FC = () => {
 
   const resetAddressForm = () => {
     setAddressForm(initialAddress);
+    addressBaselineRef.current = initialAddress;
     setEditingAddressId(null);
     setShowAddressForm(false);
+  };
+
+  const handleSectionChange = (nextSection: AccountSection) => {
+    if (nextSection === section) return;
+    if ((hasProfileDraft || hasAddressDraft) && !confirmDiscard()) return;
+    if (hasProfileDraft) {
+      setProfile(savedProfileRef.current);
+      setEmail(savedEmailRef.current);
+    }
+    if (hasAddressDraft) resetAddressForm();
+    markClean();
+    setSection(nextSection);
   };
 
   const handleSaveAddress = async (event: React.FormEvent) => {
@@ -226,6 +284,7 @@ export const AccountPage: React.FC = () => {
         isDefault: addressForm.isDefault || addresses.length === 0,
       }, editingAddressId || undefined);
       setAddresses(await getCustomerAddresses(user.uid));
+      markClean();
       resetAddressForm();
       showToast(editingAddressId ? 'Address updated.' : 'Address saved.');
     } catch (error) {
@@ -238,6 +297,7 @@ export const AccountPage: React.FC = () => {
   const handleEditAddress = (address: CustomerAddress) => {
     const { id: _id, ...fields } = address;
     setAddressForm(fields);
+    addressBaselineRef.current = fields;
     setEditingAddressId(address.id);
     setShowAddressForm(true);
   };
@@ -257,6 +317,8 @@ export const AccountPage: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this address?')) return;
     if (!user) return;
     try {
+      const addressToDelete = addresses.find((address) => address.id === addressId);
+      if (!window.confirm(`Delete the ${addressToDelete?.label || 'saved'} address for ${addressToDelete?.fullName || 'this customer'}?`)) return;
       await deleteCustomerAddress(user.uid, addressId);
       setAddresses(await getCustomerAddresses(user.uid));
       showToast('Address removed.', 'info');
@@ -266,7 +328,7 @@ export const AccountPage: React.FC = () => {
   };
 
   if (authLoading || isLoading) {
-    return <div className="mx-auto max-w-7xl px-4 py-24 text-center text-sm text-[#4A1525]/70">Loading your account...</div>;
+    return     <div className="mx-auto max-w-7xl px-4 py-24 text-center text-sm text-[#4A1525]/70" role="status">Loading your account…</div>;
   }
 
   if (!user) {
@@ -300,9 +362,11 @@ export const AccountPage: React.FC = () => {
       <nav aria-label="Account sections" className="flex gap-2 overflow-x-auto border-b border-[#EADBCE] pb-3">
         {sections.map((item) => (
           <button
+            type="button"
             key={item.id}
-            onClick={() => setSection(item.id)}
+            onClick={() => handleSectionChange(item.id)}
             aria-current={section === item.id ? 'page' : undefined}
+            aria-pressed={section === item.id}
             className={`shrink-0 px-4 py-2 text-sm transition-colors ${section === item.id ? 'bg-[#2A0814] text-[#FAF7F2]' : 'text-[#4A1525] hover:bg-[#F4EFEA]'}`}
           >
             {item.label}
@@ -316,16 +380,21 @@ export const AccountPage: React.FC = () => {
         <form onSubmit={(event) => { event.preventDefault(); void handleSaveProfile(); }} className="max-w-3xl space-y-6">
           <div className="flex items-center gap-4 border-b border-[#EADBCE] pb-6">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#C49A45]/40 bg-[#F4EFEA] text-[#C49A45]">
-              {profile.photoURL ? <img src={profile.photoURL} alt="Profile" className="h-full w-full object-cover" /> : <UserRound className="h-8 w-8" />}
+              {profile.photoURL ? (
+                <img src={profile.photoURL} alt="Profile" width={80} height={80} className="h-full w-full object-cover" />
+              ) : <UserRound className="h-8 w-8" />}
             </div>
             <div>
               <label className="block text-sm text-[#2A0814]">
                 Profile photo URL or public image path
                 <input
                   type="text"
+                  name="photoURL"
+                  autoComplete="url"
+                  spellCheck={false}
                   value={profile.photoURL}
                   onChange={(event) => setProfile({ ...profile, photoURL: event.target.value })}
-                  placeholder="/images/your-profile-photo.jpg"
+                  placeholder="e.g. /images/profile.jpg…"
                   className="mt-1 block w-full border border-[#EADBCE] bg-white/60 px-3 py-2 outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                 />
               </label>
@@ -336,19 +405,19 @@ export const AccountPage: React.FC = () => {
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="space-y-1 text-sm text-[#2A0814]">
               <span>Full Name</span>
-              <input required value={profile.fullName} onChange={(event) => setProfile({ ...profile, fullName: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]" />
+              <input required name="name" autoComplete="name" value={profile.fullName} onChange={(event) => setProfile({ ...profile, fullName: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 text-[#2A0814] outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]" />
             </label>
             <label className="space-y-1 text-sm text-[#2A0814]">
               <span>Email</span>
-              <input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]" />
+              <input required name="email" type="email" autoComplete="email" spellCheck={false} value={email} onChange={(event) => setEmail(event.target.value)} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 text-[#2A0814] outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]" />
             </label>
             <label className="space-y-1 text-sm text-[#2A0814]">
               <span>Mobile Number</span>
-              <input type="tel" autoComplete="tel" value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]" />
+              <input name="tel" type="tel" autoComplete="tel" inputMode="tel" value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 text-[#2A0814] outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]" />
             </label>
             <label className="space-y-1 text-sm text-[#2A0814]">
               <span>Gender</span>
-              <select value={profile.gender} onChange={(event) => setProfile({ ...profile, gender: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]">
+              <select name="gender" value={profile.gender} onChange={(event) => setProfile({ ...profile, gender: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 text-[#2A0814] outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]">
                 <option value="">Select</option>
                 <option value="woman">Woman</option>
                 <option value="man">Man</option>
@@ -358,11 +427,12 @@ export const AccountPage: React.FC = () => {
             </label>
             <label className="space-y-1 text-sm text-[#2A0814]">
               <span>Date of Birth</span>
-              <input type="date" value={profile.dateOfBirth} onChange={(event) => setProfile({ ...profile, dateOfBirth: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]" />
+              <input name="bday" autoComplete="bday" type="date" value={profile.dateOfBirth} onChange={(event) => setProfile({ ...profile, dateOfBirth: event.target.value })} className="w-full border border-[#EADBCE] bg-white/60 px-3 py-2.5 text-[#2A0814] outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]" />
             </label>
           </div>
           <button disabled={isSavingProfile} className="bg-[#2A0814] px-7 py-3 text-xs font-semibold uppercase tracking-widest text-[#FAF7F2] transition-colors hover:bg-[#380E1C] disabled:opacity-60 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0">
-            {isSavingProfile ? 'Saving...' : 'Save Profile'}
+            {isSavingProfile && <span aria-hidden="true" className="mr-2 inline-flex animate-spin"><RefreshCw className="h-4 w-4" /></span>}
+            {isSavingProfile ? 'Saving…' : 'Save Profile'}
           </button>
         </form>
       )}
@@ -375,7 +445,7 @@ export const AccountPage: React.FC = () => {
               <p className="mt-1 text-sm text-[#4A1525]/70">Choose a saved address at checkout or keep several on hand.</p>
             </div>
             {!showAddressForm && (
-              <button onClick={() => { setAddressForm(initialAddress); setEditingAddressId(null); setShowAddressForm(true); }} className="inline-flex items-center gap-2 border border-[#2A0814] px-4 py-2.5 text-sm text-[#2A0814] transition-colors hover:bg-[#F4EFEA]">
+              <button type="button" onClick={() => { setAddressForm(initialAddress); addressBaselineRef.current = initialAddress; setEditingAddressId(null); setShowAddressForm(true); }} className="inline-flex min-h-11 items-center gap-2 border border-[#2A0814] px-4 py-2.5 text-sm text-[#2A0814] transition-colors hover:bg-[#F4EFEA]">
                 <Plus className="h-4 w-4" /> Add Address
               </button>
             )}
@@ -383,25 +453,25 @@ export const AccountPage: React.FC = () => {
 
           {showAddressForm && (
             <form onSubmit={handleSaveAddress} className="grid gap-4 border border-[#EADBCE] bg-[#F4EFEA] p-5 sm:grid-cols-2">
-              <label className="space-y-1 text-sm text-[#2A0814]">Full Name<input required value={addressForm.fullName} onChange={(event) => setAddressForm({ ...addressForm, fullName: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5" /></label>
-              <label className="space-y-1 text-sm text-[#2A0814]">Phone<input required type="tel" value={addressForm.phone} onChange={(event) => setAddressForm({ ...addressForm, phone: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5" /></label>
-              <label className="space-y-1 text-sm text-[#2A0814]">House / Flat / Building<input required value={addressForm.house} onChange={(event) => setAddressForm({ ...addressForm, house: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5" /></label>
-              <label className="space-y-1 text-sm text-[#2A0814]">Street / Area<input required value={addressForm.street} onChange={(event) => setAddressForm({ ...addressForm, street: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5" /></label>
-              <label className="space-y-1 text-sm text-[#2A0814]">City<input required value={addressForm.city} onChange={(event) => setAddressForm({ ...addressForm, city: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5" /></label>
-              <label className="space-y-1 text-sm text-[#2A0814]">State<input required value={addressForm.state} onChange={(event) => setAddressForm({ ...addressForm, state: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5" /></label>
-              <label className="space-y-1 text-sm text-[#2A0814]">PIN Code<input required inputMode="numeric" value={addressForm.pinCode} onChange={(event) => setAddressForm({ ...addressForm, pinCode: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5" /></label>
-              <label className="space-y-1 text-sm text-[#2A0814]">Country<input required value={addressForm.country} onChange={(event) => setAddressForm({ ...addressForm, country: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5" /></label>
-              <label className="space-y-1 text-sm text-[#2A0814]">Save As<select value={addressForm.label} onChange={(event) => setAddressForm({ ...addressForm, label: event.target.value as AddressLabel })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5"><option>Home</option><option>Work</option><option>Other</option></select></label>
-              <label className="flex items-center gap-2 self-end pb-2 text-sm text-[#2A0814]"><input type="checkbox" checked={addressForm.isDefault} onChange={(event) => setAddressForm({ ...addressForm, isDefault: event.target.checked })} /> Set as default address</label>
+              <label className="space-y-1 text-sm text-[#2A0814]">Full Name<input required name="name" autoComplete="name" value={addressForm.fullName} onChange={(event) => setAddressForm({ ...addressForm, fullName: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-[#2A0814]" /></label>
+              <label className="space-y-1 text-sm text-[#2A0814]">Phone<input required name="tel" autoComplete="tel" type="tel" inputMode="tel" value={addressForm.phone} onChange={(event) => setAddressForm({ ...addressForm, phone: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-[#2A0814]" /></label>
+              <label className="space-y-1 text-sm text-[#2A0814]">House / Flat / Building<input required name="address-line1" autoComplete="address-line1" value={addressForm.house} onChange={(event) => setAddressForm({ ...addressForm, house: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-[#2A0814]" /></label>
+              <label className="space-y-1 text-sm text-[#2A0814]">Street / Area<input required name="address-line2" autoComplete="address-line2" value={addressForm.street} onChange={(event) => setAddressForm({ ...addressForm, street: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-[#2A0814]" /></label>
+              <label className="space-y-1 text-sm text-[#2A0814]">City<input required name="address-level2" autoComplete="address-level2" value={addressForm.city} onChange={(event) => setAddressForm({ ...addressForm, city: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-[#2A0814]" /></label>
+              <label className="space-y-1 text-sm text-[#2A0814]">State<input required name="address-level1" autoComplete="address-level1" value={addressForm.state} onChange={(event) => setAddressForm({ ...addressForm, state: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-[#2A0814]" /></label>
+              <label className="space-y-1 text-sm text-[#2A0814]">PIN Code<input required name="postal-code" autoComplete="postal-code" inputMode="numeric" value={addressForm.pinCode} onChange={(event) => setAddressForm({ ...addressForm, pinCode: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-[#2A0814]" /></label>
+              <label className="space-y-1 text-sm text-[#2A0814]">Country<input required name="country-name" autoComplete="country-name" value={addressForm.country} onChange={(event) => setAddressForm({ ...addressForm, country: event.target.value })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-[#2A0814]" /></label>
+              <label className="space-y-1 text-sm text-[#2A0814]">Save As<select name="addressLabel" value={addressForm.label} onChange={(event) => setAddressForm({ ...addressForm, label: event.target.value as AddressLabel })} className="w-full border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-[#2A0814]"><option>Home</option><option>Work</option><option>Other</option></select></label>
+              <label className="flex min-h-11 items-center gap-2 self-end pb-2 text-sm text-[#2A0814]"><input name="isDefault" type="checkbox" checked={addressForm.isDefault} onChange={(event) => setAddressForm({ ...addressForm, isDefault: event.target.checked })} /> Set as default address</label>
               <div className="flex gap-2 sm:col-span-2">
-                <button disabled={isSavingAddress} className="bg-[#2A0814] px-5 py-2.5 text-sm text-[#FAF7F2] disabled:opacity-60 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0">{isSavingAddress ? 'Saving...' : editingAddressId ? 'Update Address' : 'Save Address'}</button>
+                <button disabled={isSavingAddress} className="bg-[#2A0814] px-5 py-2.5 text-sm text-[#FAF7F2] disabled:opacity-60 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0">{isSavingAddress && <span aria-hidden="true" className="mr-2 inline-flex animate-spin"><RefreshCw className="h-4 w-4" /></span>}{isSavingAddress ? 'Saving…' : editingAddressId ? 'Update Address' : 'Save Address'}</button>
                 <button type="button" onClick={resetAddressForm} className="border border-[#EADBCE] px-5 py-2.5 text-sm text-[#2A0814] touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0">Cancel</button>
               </div>
             </form>
           )}
 
           {addresses.length === 0 && !showAddressForm ? (
-            <div className="border border-[#EADBCE] bg-[#F4EFEA] px-5 py-10 text-center text-sm text-[#4A1525]/70">No saved addresses yet.</div>
+            <div className="border border-[#EADBCE] bg-[#F4EFEA] px-5 py-10 text-center text-sm text-[#4A1525]/70">No saved addresses yet. Add one above to speed up checkout.</div>
           ) : (
             <div className="divide-y divide-[#EADBCE] border-y border-[#EADBCE]">
               {addresses.map((address) => (
@@ -419,9 +489,9 @@ export const AccountPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-3 pl-8 text-xs">
-                    {!address.isDefault && <button onClick={() => void handleSetDefault(address.id)} className="text-[#4A1525] underline">Set Default</button>}
-                    <button onClick={() => handleEditAddress(address)} className="text-[#4A1525] underline">Edit</button>
-                    <button onClick={() => void handleDeleteAddress(address.id)} className="inline-flex items-center gap-1 text-red-700 underline"><Trash2 className="h-3 w-3" /> Delete</button>
+                    {!address.isDefault && <button type="button" onClick={() => void handleSetDefault(address.id)} className="min-h-11 text-[#4A1525] underline">Set Default</button>}
+                    <button type="button" onClick={() => handleEditAddress(address)} className="min-h-11 text-[#4A1525] underline">Edit</button>
+                    <button type="button" onClick={() => void handleDeleteAddress(address.id)} className="inline-flex min-h-11 items-center gap-1 text-red-700 underline"><Trash2 className="h-3 w-3" /> Delete</button>
                   </div>
                 </article>
               ))}
@@ -442,22 +512,40 @@ export const AccountPage: React.FC = () => {
               onBack={() => setSelectedOrderId(null)}
             />
           ) : ordersLoading ? (
-            <div className="border border-[#EADBCE] bg-[#F4EFEA] px-5 py-10 text-center text-sm text-[#4A1525]/70">Loading your orders...</div>
+            <div className="border border-[#EADBCE] bg-[#F4EFEA] px-5 py-10 text-center text-sm text-[#4A1525]/70" role="status">Loading your orders…</div>
           ) : ordersError ? (
             <div className="border border-red-200 bg-red-50 px-5 py-6 text-sm text-red-800" role="alert">
               <p>{ordersError}</p>
-              <button onClick={() => { setOrdersLoadedForUid(''); setOrdersError(''); }} className="mt-3 text-xs font-semibold underline">Retry</button>
+              <button type="button" onClick={() => { setOrdersLoadedForUid(''); setOrdersError(''); }} className="mt-3 min-h-11 text-xs font-semibold underline">Retry</button>
             </div>
           ) : orders.length === 0 ? (
             <div className="border border-[#EADBCE] bg-[#F4EFEA] px-5 py-12 text-center">
               <PackageCheck className="mx-auto h-8 w-8 text-[#C49A45]" />
               <p className="mt-3 text-sm text-[#4A1525]/70">No order history yet.</p>
-              <button onClick={() => navigateTo('shop')} className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#2A0814] underline">Explore the collection <ArrowRight className="h-4 w-4" /></button>
+              <a href="/shop" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop'))} className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-[#2A0814] underline">Explore the collection <ArrowRight className="h-4 w-4" /></a>
             </div>
           ) : (
-            <div className="space-y-4">
-              {orders.map((order) => (
-                <article key={order.id} className="border border-[#EADBCE] bg-[#FAF7F2] touch-manipulation">
+            <div
+              ref={ordersContainerRef}
+              className={orders.length > 50 ? 'max-h-[70vh] overflow-y-auto overscroll-contain' : 'space-y-4'}
+            >
+              <div
+                className={orders.length > 50 ? '' : 'space-y-4'}
+                style={orders.length > 50 ? { height: ordersVirtualizer.getTotalSize(), position: 'relative' } : undefined}
+              >
+              {(orders.length > 50
+                ? ordersVirtualizer.getVirtualItems()
+                : orders.map((_, index) => ({ index, start: 0 }))
+              ).map(({ index, start }) => {
+                const order = orders[index];
+                return (
+                <article
+                  key={order.id}
+                  ref={orders.length > 50 ? ordersVirtualizer.measureElement : undefined}
+                  data-index={index}
+                  style={orders.length > 50 ? { position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${start}px)` } : undefined}
+                  className={`border border-[#EADBCE] bg-[#FAF7F2] touch-manipulation${orders.length > 50 ? ' mb-4' : ''}`}
+                >
                   <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EADBCE] bg-[#F4EFEA] px-4 py-3 text-xs">
                     <span className="font-medium text-[#2A0814]">Order {order.orderId || order.id}</span>
                     <span className="text-[#4A1525]/70">{formatOrderDate(order.createdAt)}</span>
@@ -466,7 +554,7 @@ export const AccountPage: React.FC = () => {
                   <div className="space-y-3 p-4">
                     {order.items?.map((item) => (
                       <div key={item.productId} className="flex items-center gap-3">
-                        {item.image && <img src={item.image} alt="" className="h-14 w-14 shrink-0 border border-[#EADBCE] object-cover" />}
+                        {item.image && <img src={item.image} alt={item.name} width={56} height={56} loading="lazy" className="h-14 w-14 shrink-0 border border-[#EADBCE] object-cover" />}
                         <div className="min-w-0 flex-1">
                           <p className="break-words text-sm font-medium text-[#2A0814]">{item.name}</p>
                           <p className="text-xs text-[#4A1525]/65">Qty {item.quantity} · <span className="tabular-nums">₹{item.price.toLocaleString('en-IN')}</span> each</p>
@@ -479,10 +567,12 @@ export const AccountPage: React.FC = () => {
                       <span className="font-semibold text-[#2A0814]">Total <span className="tabular-nums">₹{order.amount.toLocaleString('en-IN')}</span> {order.currency || 'INR'}</span>
                     </div>
                     {order.customer?.address && <p className="text-xs text-[#4A1525]/70">Delivering to: {order.customer.address}</p>}
-                    <button onClick={() => setSelectedOrderId(order.orderId || order.id)} className="no-print pt-1 text-xs font-medium text-[#2A0814] underline underline-offset-4">Order Details & Invoice</button>
+                    <button type="button" onClick={() => setSelectedOrderId(order.orderId || order.id)} aria-label={`View order details and invoice for ${order.orderId || order.id}`} className="no-print min-h-11 pt-1 text-xs font-medium text-[#2A0814] underline underline-offset-4">Order Details & Invoice</button>
                   </div>
                 </article>
-              ))}
+                );
+              })}
+              </div>
             </div>
           )}
         </section>
@@ -496,21 +586,22 @@ export const AccountPage: React.FC = () => {
           </div>
           <label className="flex items-start justify-between gap-4 border-b border-[#EADBCE] py-4 text-sm">
             <span><strong className="block font-medium text-[#2A0814]">Email updates</strong><span className="mt-1 block text-xs text-[#4A1525]/70">Order updates and occasional collection news.</span></span>
-            <input type="checkbox" checked={profile.emailUpdates} onChange={(event) => setProfile({ ...profile, emailUpdates: event.target.checked })} />
+            <input name="emailUpdates" type="checkbox" checked={profile.emailUpdates} onChange={(event) => setProfile({ ...profile, emailUpdates: event.target.checked })} />
           </label>
           <label className="flex items-start justify-between gap-4 border-b border-[#EADBCE] py-4 text-sm">
             <span><strong className="block font-medium text-[#2A0814]">SMS updates</strong><span className="mt-1 block text-xs text-[#4A1525]/70">Delivery and account notifications to your saved mobile.</span></span>
-            <input type="checkbox" checked={profile.smsUpdates} onChange={(event) => setProfile({ ...profile, smsUpdates: event.target.checked })} />
+            <input name="smsUpdates" type="checkbox" checked={profile.smsUpdates} onChange={(event) => setProfile({ ...profile, smsUpdates: event.target.checked })} />
           </label>
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EADBCE] py-4">
             <div>
               <strong className="block text-sm font-medium text-[#2A0814]">Password & Security</strong>
               <span className="mt-1 block text-xs text-[#4A1525]/70">Request a password reset link for your account email.</span>
             </div>
-            <button type="button" onClick={() => void handlePasswordReset()} className="border border-[#EADBCE] px-4 py-2 text-sm text-[#2A0814] transition-colors hover:bg-[#F4EFEA]">Send Reset Link</button>
+            <button type="button" onClick={() => void handlePasswordReset()} className="min-h-11 border border-[#EADBCE] px-4 py-2 text-sm text-[#2A0814] transition-colors hover:bg-[#F4EFEA]">Send Reset Link</button>
           </div>
-          <button onClick={() => void handleSaveProfile()} disabled={isSavingProfile} className="bg-[#2A0814] px-7 py-3 text-xs font-semibold uppercase tracking-widest text-[#FAF7F2] transition-colors hover:bg-[#380E1C] disabled:opacity-60">
-            {isSavingProfile ? 'Saving...' : 'Save Settings'}
+          <button type="button" onClick={() => void handleSaveProfile()} disabled={isSavingProfile} className="min-h-11 bg-[#2A0814] px-7 py-3 text-xs font-semibold uppercase tracking-widest text-[#FAF7F2] transition-colors hover:bg-[#380E1C] disabled:opacity-60">
+            {isSavingProfile && <span aria-hidden="true" className="mr-2 inline-flex animate-spin"><RefreshCw className="h-4 w-4" /></span>}
+            {isSavingProfile ? 'Saving…' : 'Save Settings'}
           </button>
         </section>
       )}
@@ -530,8 +621,8 @@ export const AccountPage: React.FC = () => {
             </div>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button onClick={() => navigateTo('contact')} className="bg-[#2A0814] px-5 py-3 text-xs font-semibold uppercase tracking-widest text-[#FAF7F2]">Contact Concierge</button>
-            <button onClick={() => navigateTo('faq')} className="border border-[#EADBCE] px-5 py-3 text-xs font-semibold uppercase tracking-widest text-[#2A0814]">Browse FAQs</button>
+            <a href="/contact" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('contact'))} className="inline-flex min-h-11 items-center bg-[#2A0814] px-5 py-3 text-xs font-semibold uppercase tracking-widest text-[#FAF7F2]">Contact Concierge</a>
+            <a href="/faq" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('faq'))} className="inline-flex min-h-11 items-center border border-[#EADBCE] px-5 py-3 text-xs font-semibold uppercase tracking-widest text-[#2A0814]">Browse FAQs</a>
           </div>
         </section>
       )}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { RefreshCw, CheckCircle2, ShieldCheck, HelpCircle } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
+import { handleInternalLinkClick } from '../utils/navigation';
 
 export const ReturnsPage: React.FC = () => {
   const { navigateTo } = useShop();
@@ -66,12 +67,13 @@ export const ReturnsPage: React.FC = () => {
           <span className="text-xs text-[#2A0814] font-medium">
             Need to initiate a return or exchange now?
           </span>
-          <button
-            onClick={() => navigateTo('contact')}
-            className="py-2.5 px-6 bg-[#2A0814] text-[#FAF7F2] text-xs uppercase tracking-wider font-semibold rounded-xs hover:bg-[#380E1C] cursor-pointer"
+          <a
+            href="/contact"
+            onClick={(event) => handleInternalLinkClick(event, () => navigateTo('contact'))}
+            className="inline-flex min-h-11 items-center rounded-xs bg-[#2A0814] px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#FAF7F2] hover:bg-[#380E1C]"
           >
             Connect With Concierge
-          </button>
+          </a>
         </div>
       </div>
     </div>

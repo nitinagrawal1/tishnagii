@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { Search, Heart, ShoppingBag, Menu, X, ArrowRight, UserRound, LogOut } from 'lucide-react';
 import { AuthModal } from './AuthModal';
+import { handleInternalLinkClick } from '../../utils/navigation';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 export const Header: React.FC = () => {
   const {
@@ -22,6 +24,26 @@ export const Header: React.FC = () => {
   const [isBannerDismissed, setIsBannerDismissed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const accountMenuRootRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useDialogFocus<HTMLDivElement>(isMobileMenuOpen, () => setIsMobileMenuOpen(false));
+
+  useEffect(() => {
+    if (!isAccountMenuOpen) return;
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!accountMenuRootRef.current?.contains(event.target as Node)) setIsAccountMenuOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setIsAccountMenuOpen(false);
+      document.getElementById('header-account-trigger')?.focus();
+    };
+    document.addEventListener('pointerdown', closeOnOutsideClick);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideClick);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isAccountMenuOpen]);
 
   const navLinks = [
     { label: 'Shop All', page: 'shop' as const },
@@ -48,7 +70,7 @@ export const Header: React.FC = () => {
           <button
             onClick={() => setIsBannerDismissed(true)}
             aria-label="Dismiss banner"
-            className="text-[#FAF7F2]/60 hover:text-[#FAF7F2] p-0.5 ml-2 transition-colors cursor-pointer"
+            className="ml-2 flex min-h-11 min-w-11 items-center justify-center text-[#FAF7F2]/60 transition-colors hover:text-[#FAF7F2]"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -56,30 +78,30 @@ export const Header: React.FC = () => {
       )}
 
       {/* 2. Strict One-Row Three-Zone Top Bar Contract */}
-      <header className="sticky top-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#EADBCE] transition-all">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#EADBCE]">
+        <div className="header-inner max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 h-[4.5rem] sm:h-20 flex items-center justify-between gap-1">
           
           {/* Zone 1: Single text element wordmark in display face */}
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <div className="header-brand flex min-w-0 items-center gap-1.5 sm:gap-3">
             <button
+              type="button"
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden -ml-1.5 p-1.5 text-[#2A0814] transition-colors hover:text-[#C49A45] sm:-ml-2 sm:p-2"
+              className="header-menu-trigger lg:hidden flex h-11 w-11 shrink-0 items-center justify-center text-[#2A0814] transition-colors hover:text-[#C49A45]"
               aria-label="Open navigation menu"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-navigation"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="h-5 w-5 shrink-0" />
             </button>
             <a
               href="/"
-              onClick={(e) => {
-                e.preventDefault();
-                navigateTo('home');
-              }}
-              className="group flex min-w-0 flex-col items-start text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45]"
+              onClick={(event) => handleInternalLinkClick(event, () => navigateTo('home'))}
+              className="header-wordmark-link group flex min-w-0 flex-col items-start text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45]"
             >
-              <span className="whitespace-nowrap font-serif text-xl font-medium leading-tight tracking-[0.12em] text-[#2A0814] transition-colors group-hover:text-[#4A1525] sm:text-3xl sm:tracking-[0.22em] tabular-nums">
+              <span translate="no" className="header-wordmark whitespace-nowrap font-serif text-lg font-medium leading-tight tracking-[0.08em] text-[#2A0814] transition-colors group-hover:text-[#4A1525] sm:text-3xl sm:tracking-[0.22em]">
                 TISHNAGII
               </span>
-              <span className="-mt-0.5 whitespace-nowrap text-[8px] font-light tracking-[0.15em] text-[#C49A45] sm:text-[10px] sm:tracking-[0.3em]">
+              <span className="header-tagline -mt-0.5 whitespace-nowrap text-[7px] font-light tracking-[0.1em] text-[#C49A45] sm:text-[10px] sm:tracking-[0.3em]">
                 तिश्नगी · ARTISANAL LUXURY
               </span>
             </a>
@@ -90,48 +112,60 @@ export const Header: React.FC = () => {
             {navLinks.map((item) => {
               const isActive = currentPage === item.page;
               return (
-                <button
+                <a
                   key={item.label}
-                  onClick={() => handleNavClick(item.page)}
-                  className={`relative py-1 transition-colors whitespace-nowrap cursor-pointer ${
+                  href={`/${item.page}`}
+                  onClick={(event) => handleInternalLinkClick(event, () => handleNavClick(item.page))}
+                  className={`relative py-1 transition-colors whitespace-nowrap ${
                     isActive
                       ? 'text-[#2A0814] font-semibold'
                       : 'text-[#4A1525]/80 hover:text-[#2A0814]'
                   }`}
+                  aria-current={isActive ? 'page' : undefined}
                 >
                   {item.label}
                   {isActive && (
                     <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#C49A45]" />
                   )}
-                </button>
+                </a>
               );
             })}
           </nav>
 
           {/* Zone 3: 1-2 primary actions (Search, Wishlist, Cart) */}
-          <div className="flex shrink-0 items-center gap-0 sm:gap-2">
+          <div className="header-actions flex shrink-0 items-center gap-1 sm:gap-2">
             {/* Search Affordance */}
             <button
+              type="button"
               onClick={() => setIsSearchOpen(true)}
               aria-label="Search jewellery collection"
-              className="rounded-full p-1.5 text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45] sm:p-2"
+              className="mobile-header-action relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45]"
             >
               <Search className="w-5 h-5" />
             </button>
 
-            <div className="relative">
+            <div className="relative" ref={accountMenuRootRef}>
               <button
+                id="header-account-trigger"
+                type="button"
                 onClick={() => {
                   if (user) setIsAccountMenuOpen((open) => !open);
                   else setIsAuthModalOpen(true);
                 }}
                 aria-label={user ? 'Open account menu' : 'Sign in or create account'}
                 aria-expanded={user ? isAccountMenuOpen : undefined}
+                aria-controls={user && isAccountMenuOpen ? 'account-dropdown' : undefined}
                 disabled={authLoading}
-                className="rounded-full p-1.5 text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45] disabled:opacity-60 sm:p-2"
+                className="mobile-header-action relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45] disabled:opacity-60"
               >
                 {user?.photoURL ? (
-                  <img src={user.photoURL} alt="" className="w-5 h-5 rounded-full object-cover" />
+                  <img
+                    src={user.photoURL}
+                    alt=""
+                    width={20}
+                    height={20}
+                    className="h-5 w-5 rounded-full object-cover"
+                  />
                 ) : user ? (
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#C49A45] text-[10px] font-semibold text-[#2A0814]">
                     {(user.displayName || user.email || 'T').charAt(0).toUpperCase()}
@@ -141,46 +175,41 @@ export const Header: React.FC = () => {
                 )}
               </button>
               {user && isAccountMenuOpen && (
-                <div className="absolute right-0 top-full z-50 mt-2 w-64 border border-[#EADBCE] bg-[#FAF7F2] p-2 shadow-xl">
+                <div id="account-dropdown" className="account-dropdown fixed right-2 top-[calc(env(safe-area-inset-top)+4.75rem)] z-50 w-[min(18rem,calc(100vw-1rem))] max-h-[calc(100dvh-6rem)] overflow-y-auto overscroll-contain border border-[#EADBCE] bg-[#FAF7F2] p-2 shadow-xl sm:absolute sm:right-0 sm:top-full sm:mt-2 sm:w-64 sm:max-h-[calc(100dvh-7rem)]">
                   <div className="border-b border-[#EADBCE] px-3 py-2">
-                    <p className="truncate text-sm font-medium text-[#2A0814]">{user.displayName || 'TISHNAGII customer'}</p>
-                    <p className="truncate text-xs text-[#4A1525]/65">{user.email}</p>
+                    <p className="break-words text-sm font-medium text-[#2A0814]">{user.displayName || 'TISHNAGII customer'}</p>
+                    <p className="break-all text-xs text-[#4A1525]/65">{user.email}</p>
                   </div>
-                  <button
-                    onClick={() => {
-                      setIsAccountMenuOpen(false);
-                      navigateTo('account');
-                    }}
-                    className="w-full px-3 py-2 text-left text-sm text-[#2A0814] transition-colors hover:bg-[#F4EFEA]"
+                  <a
+                    href="/account"
+                    onClick={(event) => handleInternalLinkClick(event, () => { setIsAccountMenuOpen(false); navigateTo('account'); })}
+                    className="flex min-h-11 w-full items-center break-words px-3 py-3 text-left text-sm text-[#2A0814] transition-colors hover:bg-[#F4EFEA]"
                   >
                     My Account
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsAccountMenuOpen(false);
-                      navigateTo('wishlist');
-                    }}
-                    className="w-full px-3 py-2 text-left text-sm text-[#2A0814] transition-colors hover:bg-[#F4EFEA]"
+                  </a>
+                  <a
+                    href="/wishlist"
+                    onClick={(event) => handleInternalLinkClick(event, () => { setIsAccountMenuOpen(false); navigateTo('wishlist'); })}
+                    className="flex min-h-11 w-full items-center break-words px-3 py-3 text-left text-sm text-[#2A0814] transition-colors hover:bg-[#F4EFEA]"
                   >
                     Wishlist
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsAccountMenuOpen(false);
-                      navigateTo('cart');
-                    }}
-                    className="w-full px-3 py-2 text-left text-sm text-[#2A0814] transition-colors hover:bg-[#F4EFEA]"
+                  </a>
+                  <a
+                    href="/cart"
+                    onClick={(event) => handleInternalLinkClick(event, () => { setIsAccountMenuOpen(false); navigateTo('cart'); })}
+                    className="flex min-h-11 w-full items-center break-words px-3 py-3 text-left text-sm text-[#2A0814] transition-colors hover:bg-[#F4EFEA]"
                   >
                     Shopping Bag
-                  </button>
+                  </a>
                   <button
+                    type="button"
                     onClick={() => {
                       void signOutUser().then(() => {
                         setIsAccountMenuOpen(false);
                         showToast('You have been signed out.', 'info');
                       }).catch(() => showToast('Unable to sign out. Please try again.', 'error'));
                     }}
-                    className="mt-1 flex w-full items-center gap-2 border-t border-[#EADBCE] px-3 py-2 text-left text-sm text-[#4A1525] transition-colors hover:bg-[#F4EFEA]"
+                    className="mt-1 flex min-h-11 w-full items-center gap-2 border-t border-[#EADBCE] px-3 py-3 text-left text-sm text-[#4A1525] transition-colors hover:bg-[#F4EFEA]"
                   >
                     <LogOut className="h-4 w-4" />
                     Sign out
@@ -190,10 +219,11 @@ export const Header: React.FC = () => {
             </div>
 
             {/* Wishlist Link */}
-            <button
-              onClick={() => navigateTo('wishlist')}
+            <a
+              href="/wishlist"
+              onClick={(event) => handleInternalLinkClick(event, () => navigateTo('wishlist'))}
               aria-label="View saved wishlist"
-              className="relative rounded-full p-1.5 text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45] sm:p-2"
+              className="relative flex min-h-11 min-w-11 items-center justify-center rounded-full p-1.5 text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45] sm:p-2"
             >
               <Heart className="w-5 h-5" />
               {wishlist.length > 0 && (
@@ -201,13 +231,13 @@ export const Header: React.FC = () => {
                   {wishlist.length}
                 </span>
               )}
-            </button>
+            </a>
 
             {/* Cart Trigger */}
             <button
               onClick={() => setIsCartDrawerOpen(true)}
               aria-label="View shopping bag"
-              className="relative flex items-center rounded-full p-1.5 text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45] sm:p-2"
+              className="relative flex min-h-11 min-w-11 items-center justify-center rounded-full p-1.5 text-[#2A0814] transition-colors hover:bg-[#F4EFEA] hover:text-[#C49A45] sm:p-2"
             >
               <ShoppingBag className="w-5 h-5" />
               {cartCount > 0 && (
@@ -224,31 +254,33 @@ export const Header: React.FC = () => {
 
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex">
+        <div className="fixed inset-0 z-50 flex lg:hidden">
           {/* Backdrop */}
-          <div
+          <button
+            type="button"
             className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
             onClick={() => setIsMobileMenuOpen(false)}
+            aria-label="Close navigation menu"
           />
 
-          <div className="relative w-full max-w-xs bg-[#FAF7F2] h-full shadow-2xl flex flex-col justify-between p-6 z-10 overflow-y-auto">
+        <div id="mobile-navigation" ref={mobileMenuRef} className="relative flex h-dvh w-[min(20rem,calc(100vw-2rem))] min-h-0 flex-col justify-between overflow-y-auto overscroll-contain bg-[#FAF7F2] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl sm:p-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]" role="dialog" aria-modal="true" aria-labelledby="mobile-navigation-title" tabIndex={-1}>
             <div>
               <div className="flex items-center justify-between pb-6 border-b border-[#EADBCE]">
                 <a
                   href="/"
-                  onClick={(event) => {
-                    event.preventDefault();
+                  onClick={(event) => handleInternalLinkClick(event, () => {
                     navigateTo('home');
                     setIsMobileMenuOpen(false);
-                  }}
+                  })}
                   className="block"
                 >
-                  <span className="font-serif text-2xl tracking-[0.2em] text-[#2A0814]">TISHNAGII</span>
+                  <span id="mobile-navigation-title" translate="no" className="font-serif text-2xl tracking-[0.2em] text-[#2A0814]">TISHNAGII</span>
                   <div className="text-[10px] tracking-widest text-[#C49A45]">तिश्नगी</div>
                 </a>
                 <button
+                  type="button"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-1.5 text-[#2A0814] hover:text-[#C49A45]"
+                  className="flex min-h-11 min-w-11 items-center justify-center p-1.5 text-[#2A0814] hover:text-[#C49A45]"
                   aria-label="Close menu"
                 >
                   <X className="w-5 h-5" />
@@ -260,14 +292,16 @@ export const Header: React.FC = () => {
                   Navigation
                 </p>
                 {navLinks.map((item) => (
-                  <button
+                  <a
                     key={item.label}
-                    onClick={() => handleNavClick(item.page)}
-                    className="w-full text-left py-2 text-base font-medium text-[#2A0814] hover:text-[#C49A45] flex items-center justify-between transition-colors"
+                    href={`/${item.page}`}
+                    onClick={(event) => handleInternalLinkClick(event, () => handleNavClick(item.page))}
+                    className="flex min-h-11 w-full items-center justify-between break-words py-3 text-left text-base font-medium text-[#2A0814] transition-colors hover:text-[#C49A45]"
+                    aria-current={currentPage === item.page ? 'page' : undefined}
                   >
                     <span>{item.label}</span>
                     <ArrowRight className="w-4 h-4 opacity-40" />
-                  </button>
+                  </a>
                 ))}
 
                 <div className="pt-6 border-t border-[#EADBCE]">
@@ -275,42 +309,18 @@ export const Header: React.FC = () => {
                     Featured Suites
                   </p>
                   <div className="space-y-2.5 text-sm text-[#4A1525]">
-                    <button
-                      onClick={() => {
-                        navigateTo('shop', undefined, 'necklaces');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="block w-full text-left hover:text-[#C49A45]"
-                    >
-                      Kundan & Polki Chokers
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigateTo('shop', undefined, 'earrings');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="block w-full text-left hover:text-[#C49A45]"
-                    >
+                    <a href="/shop?category=necklaces" onClick={(event) => handleInternalLinkClick(event, () => { navigateTo('shop', undefined, 'necklaces'); setIsMobileMenuOpen(false); })} className="block min-h-11 w-full break-words py-3 text-left hover:text-[#C49A45]">
+                      Kundan &amp; Polki Chokers
+                    </a>
+                    <a href="/shop?category=earrings" onClick={(event) => handleInternalLinkClick(event, () => { navigateTo('shop', undefined, 'earrings'); setIsMobileMenuOpen(false); })} className="block min-h-11 w-full break-words py-3 text-left hover:text-[#C49A45]">
                       Temple Gold Jhumkas
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigateTo('shop', undefined, 'bridal-sets');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="block w-full text-left hover:text-[#C49A45]"
-                    >
+                    </a>
+                    <a href="/shop?category=bridal-sets" onClick={(event) => handleInternalLinkClick(event, () => { navigateTo('shop', undefined, 'bridal-sets'); setIsMobileMenuOpen(false); })} className="block min-h-11 w-full break-words py-3 text-left hover:text-[#C49A45]">
                       Royal Bridal Suites
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigateTo('shop', undefined, 'bangles');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="block w-full text-left hover:text-[#C49A45]"
-                    >
+                    </a>
+                    <a href="/shop?category=bangles" onClick={(event) => handleInternalLinkClick(event, () => { navigateTo('shop', undefined, 'bangles'); setIsMobileMenuOpen(false); })} className="block min-h-11 w-full break-words py-3 text-left hover:text-[#C49A45]">
                       Jaipuri Openable Kadas
-                    </button>
+                    </a>
                   </div>
                 </div>
               </div>

@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { preload } from 'react-dom';
 import { useShop } from '../context/ShopContext';
 import { PRODUCTS } from '@shared/data/mockData';
 import { ProductCard } from '../components/common/ProductCard';
+import { handleInternalLinkClick } from '../utils/navigation';
+import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
 import {
   Heart,
   ShoppingBag,
@@ -17,6 +20,9 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
+type ProductTab = 'specs' | 'care' | 'reviews';
+const productTabs: ProductTab[] = ['specs', 'care', 'reviews'];
+
 interface ProductDetailPageProps {
   slug: string;
 }
@@ -27,20 +33,42 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
   const product = PRODUCTS.find((p) => p.slug === slug) || PRODUCTS[0];
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<'specs' | 'care' | 'reviews'>('specs');
+  const [activeTab, setActiveTab] = useState<ProductTab>(() => {
+    const tab = new URLSearchParams(window.location.search).get('tab') as ProductTab | null;
+    return tab && productTabs.includes(tab) ? tab : 'specs';
+  });
 
   // Review submission state
   const [newReviewAuthor, setNewReviewAuthor] = useState('');
   const [newReviewCity, setNewReviewCity] = useState('');
   const [newReviewRating, setNewReviewRating] = useState(5);
   const [newReviewComment, setNewReviewComment] = useState('');
+  const [isReviewDirty, setIsReviewDirty] = useState(false);
+  const { markClean: markReviewClean } = useUnsavedChanges(isReviewDirty, `product-review-${slug}`);
   const [reviewsList, setReviewsList] = useState(product.reviews);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+
+  React.useEffect(() => {
+    const url = new URL(window.location.href);
+    if (activeTab === 'specs') url.searchParams.delete('tab');
+    else url.searchParams.set('tab', activeTab);
+    window.history.replaceState(window.history.state, '', url);
+  }, [activeTab]);
+  React.useEffect(() => {
+    const restoreTab = () => {
+      const tab = new URLSearchParams(window.location.search).get('tab') as ProductTab | null;
+      setActiveTab(tab && productTabs.includes(tab) ? tab : 'specs');
+    };
+    window.addEventListener('popstate', restoreTab);
+    return () => window.removeEventListener('popstate', restoreTab);
+  }, []);
 
   const isFavorited = isInWishlist(product.id);
   const relatedProducts = PRODUCTS.filter(
     (p) => p.category === product.category && p.id !== product.id
   ).slice(0, 4);
+
+  preload(product.images[selectedImageIndex] || product.images[0], { as: 'image', fetchPriority: 'high' });
 
   const handleReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +91,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
     setNewReviewAuthor('');
     setNewReviewCity('');
     setNewReviewComment('');
+    setIsReviewDirty(false);
+    markReviewClean();
     showToast('Thank you for sharing your experience!');
   };
 
@@ -70,26 +100,29 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
       {/* Breadcrumb Navigation (Unboxed text with /) */}
       <nav className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#4A1525]/60 font-medium">
-        <button
-          onClick={() => navigateTo('home')}
-          className="hover:text-[#2A0814] transition-colors"
+        <a
+          href="/"
+          onClick={(event) => handleInternalLinkClick(event, () => navigateTo('home'))}
+          className="inline-flex min-h-11 items-center transition-colors hover:text-[#2A0814]"
         >
           Home
-        </button>
+        </a>
         <span aria-hidden="true">/</span>
-        <button
-          onClick={() => navigateTo('shop')}
-          className="hover:text-[#2A0814] transition-colors"
+        <a
+          href="/shop"
+          onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop'))}
+          className="inline-flex min-h-11 items-center transition-colors hover:text-[#2A0814]"
         >
           All Jewellery
-        </button>
+        </a>
         <span aria-hidden="true">/</span>
-        <button
-          onClick={() => navigateTo('shop', undefined, product.category)}
-          className="hover:text-[#2A0814] transition-colors"
+        <a
+          href={`/shop?category=${encodeURIComponent(product.category)}`}
+          onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop', undefined, product.category))}
+          className="inline-flex min-h-11 items-center transition-colors hover:text-[#2A0814]"
         >
           {product.categoryLabel}
-        </button>
+        </a>
         <span aria-hidden="true">/</span>
         <span className="min-w-0 max-w-full break-words text-[#2A0814]">{product.name}</span>
       </nav>
@@ -104,8 +137,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
             <img
               src={product.images[selectedImageIndex] || product.images[0]}
               alt={`${product.name} detailed view`}
+              width={1200}
+              height={900}
+              loading="eager"
+              fetchPriority="high"
               referrerPolicy="no-referrer"
-              className="w-full h-full object-cover object-center transition-all duration-300"
+              className="w-full h-full object-cover object-center transition-opacity duration-300"
             />
 
             {/* In Stock & Plating Stamp */}
@@ -126,7 +163,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                 <button
                   key={idx}
                   onClick={() => setSelectedImageIndex(idx)}
-                  className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xs border overflow-hidden shrink-0 transition-all cursor-pointer ${
+                  className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xs border overflow-hidden shrink-0 transition-[border-color,box-shadow,opacity] cursor-pointer ${
                     selectedImageIndex === idx
                       ? 'border-[#C49A45] ring-2 ring-[#C49A45]/30'
                       : 'border-[#EADBCE] opacity-75 hover:opacity-100'
@@ -135,6 +172,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                   <img
                     src={img}
                     alt={`${product.name} thumbnail ${idx + 1}`}
+                    width={96}
+                    height={96}
+                    loading="lazy"
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover"
                   />
@@ -229,7 +269,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
               {/* Primary Add to Cart Button */}
               <button
                 onClick={() => addToCart(product, quantity)}
-                className="order-3 h-12 w-full bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer sm:order-none sm:w-auto sm:flex-1"
+                className="order-3 flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xs bg-[#2A0814] text-xs font-semibold uppercase tracking-widest text-[#FAF7F2] shadow-md transition-[background-color,box-shadow] hover:bg-[#380E1C] sm:order-none sm:w-auto sm:flex-1"
               >
                 <ShoppingBag className="w-4 h-4" />
                 <span className="whitespace-nowrap">Add to Shopping Bag</span>
@@ -276,8 +316,31 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
 
       {/* Tabs: Specifications / Care / Reviews */}
       <div className="border-t border-[#EADBCE] pt-12">
-        <div className="flex items-center gap-4 sm:gap-8 border-b border-[#EADBCE] pb-3 text-sm">
+        <div
+          role="tablist"
+          aria-label="Product information"
+          onKeyDown={(event) => {
+            const currentIndex = productTabs.indexOf(activeTab);
+            let nextIndex = currentIndex;
+            if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % productTabs.length;
+            else if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + productTabs.length) % productTabs.length;
+            else if (event.key === 'Home') nextIndex = 0;
+            else if (event.key === 'End') nextIndex = productTabs.length - 1;
+            else return;
+            event.preventDefault();
+            const nextTab = productTabs[nextIndex];
+            setActiveTab(nextTab);
+            document.getElementById(`product-tab-${nextTab}`)?.focus();
+          }}
+          className="flex items-center gap-4 sm:gap-8 border-b border-[#EADBCE] pb-3 text-sm"
+        >
           <button
+            id="product-tab-specs"
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'specs'}
+            aria-controls="product-panel-specs"
+            tabIndex={activeTab === 'specs' ? 0 : -1}
             onClick={() => setActiveTab('specs')}
             className={`font-serif pb-2 text-base sm:text-lg transition-colors cursor-pointer relative ${
               activeTab === 'specs'
@@ -292,6 +355,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
           </button>
 
           <button
+            id="product-tab-care"
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'care'}
+            aria-controls="product-panel-care"
+            tabIndex={activeTab === 'care' ? 0 : -1}
             onClick={() => setActiveTab('care')}
             className={`font-serif pb-2 text-base sm:text-lg transition-colors cursor-pointer relative ${
               activeTab === 'care'
@@ -306,6 +375,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
           </button>
 
           <button
+            id="product-tab-reviews"
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'reviews'}
+            aria-controls="product-panel-reviews"
+            tabIndex={activeTab === 'reviews' ? 0 : -1}
             onClick={() => setActiveTab('reviews')}
             className={`font-serif pb-2 text-base sm:text-lg transition-colors cursor-pointer relative ${
               activeTab === 'reviews'
@@ -321,8 +396,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
         </div>
 
         {/* Tab 1: Specifications */}
-        {activeTab === 'specs' && (
-          <div className="py-8 max-w-3xl">
+        <div
+          id="product-panel-specs"
+          role="tabpanel"
+          aria-labelledby="product-tab-specs"
+          tabIndex={0}
+          hidden={activeTab !== 'specs'}
+          className="py-8 max-w-3xl"
+        >
             <dl className="divide-y divide-[#EADBCE]/60 text-xs sm:text-sm">
               <div className="py-3 sm:grid sm:grid-cols-3 sm:gap-4">
                 <dt className="font-medium text-[#4A1525]/70">Base Matrix Metal</dt>
@@ -373,12 +454,17 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                 </dd>
               </div>
             </dl>
-          </div>
-        )}
+        </div>
 
         {/* Tab 2: Care & Storage */}
-        {activeTab === 'care' && (
-          <div className="py-8 max-w-3xl space-y-4 text-xs sm:text-sm text-[#4A1525]/80 leading-relaxed font-light">
+        <div
+          id="product-panel-care"
+          role="tabpanel"
+          aria-labelledby="product-tab-care"
+          tabIndex={0}
+          hidden={activeTab !== 'care'}
+          className="py-8 max-w-3xl space-y-4 text-xs sm:text-sm text-[#4A1525]/80 leading-relaxed font-light"
+        >
             <p>
               To ensure your TISHNAGII piece preserves its original royal sheen across seasons, follow our Karigar preservation rituals:
             </p>
@@ -396,12 +482,17 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                 <strong>No Water Immersion:</strong> Never wash artificial jewellery in water, soap, or chemical cleaners.
               </li>
             </ul>
-          </div>
-        )}
+        </div>
 
         {/* Tab 3: Reviews */}
-        {activeTab === 'reviews' && (
-          <div className="py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div
+          id="product-panel-reviews"
+          role="tabpanel"
+          aria-labelledby="product-tab-reviews"
+          tabIndex={0}
+          hidden={activeTab !== 'reviews'}
+          className={`py-8 grid grid-cols-1 lg:grid-cols-12 gap-8${activeTab !== 'reviews' ? ' hidden' : ''}`}
+        >
             <div className="lg:col-span-7 space-y-4">
               {reviewsList.map((rev) => (
                 <div
@@ -447,33 +538,41 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
               ) : (
                 <form onSubmit={handleReviewSubmit} className="space-y-3">
                   <div>
-                    <label className="block text-xs text-[#2A0814] mb-1">Your Name *</label>
+                    <label htmlFor="review-author" className="block text-xs text-[#2A0814] mb-1">Your Name *</label>
                     <input
+                      id="review-author"
                       type="text"
+                      name="name"
+                      autoComplete="name"
                       required
                       value={newReviewAuthor}
-                      onChange={(e) => setNewReviewAuthor(e.target.value)}
-                      placeholder="e.g. Radhika M."
+                      onChange={(e) => { setNewReviewAuthor(e.target.value); setIsReviewDirty(true); }}
+                      placeholder="e.g. Radhika Mehta…"
                       className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs text-[#2A0814] mb-1">Your City</label>
+                    <label htmlFor="review-city" className="block text-xs text-[#2A0814] mb-1">Your City</label>
                     <input
+                      id="review-city"
                       type="text"
+                      name="address-level2"
+                      autoComplete="address-level2"
                       value={newReviewCity}
-                      onChange={(e) => setNewReviewCity(e.target.value)}
-                      placeholder="e.g. Mumbai"
+                      onChange={(e) => { setNewReviewCity(e.target.value); setIsReviewDirty(true); }}
+                      placeholder="e.g. Mumbai…"
                       className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs text-[#2A0814] mb-1">Rating</label>
+                    <label htmlFor="review-rating" className="block text-xs text-[#2A0814] mb-1">Rating</label>
                     <select
+                      id="review-rating"
+                      name="rating"
                       value={newReviewRating}
-                      onChange={(e) => setNewReviewRating(Number(e.target.value))}
+                      onChange={(e) => { setNewReviewRating(Number(e.target.value)); setIsReviewDirty(true); }}
                       className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                     >
                       <option value={5}>5 Stars - Royal Perfection</option>
@@ -483,13 +582,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                   </div>
 
                   <div>
-                    <label className="block text-xs text-[#2A0814] mb-1">Review Remarks *</label>
+                    <label htmlFor="review-comment" className="block text-xs text-[#2A0814] mb-1">Review Remarks *</label>
                     <textarea
+                      id="review-comment"
+                      name="review"
                       required
                       rows={3}
                       value={newReviewComment}
-                      onChange={(e) => setNewReviewComment(e.target.value)}
-                      placeholder="How did the piece look and feel during your event?"
+                      onChange={(e) => { setNewReviewComment(e.target.value); setIsReviewDirty(true); }}
+                      placeholder="Share details of your experience…"
                       className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                     />
                   </div>
@@ -503,8 +604,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                 </form>
               )}
             </div>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Related Products Grid */}
@@ -519,12 +619,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug }) =>
                 Complete The Royal Suite
               </h2>
             </div>
-            <button
-              onClick={() => navigateTo('shop', undefined, product.category)}
-              className="text-xs font-semibold text-[#2A0814] hover:text-[#C49A45] transition-colors"
+            <a
+              href={`/shop?category=${encodeURIComponent(product.category)}`}
+              onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop', undefined, product.category))}
+              className="inline-flex min-h-11 items-center text-xs font-semibold text-[#2A0814] transition-colors hover:text-[#C49A45]"
             >
               View More in {product.categoryLabel}
-            </button>
+            </a>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

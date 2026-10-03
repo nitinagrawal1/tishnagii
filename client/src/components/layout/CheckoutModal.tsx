@@ -3,6 +3,8 @@ import { useShop } from '../../context/ShopContext';
 import { X, ShieldCheck, Lock, ArrowRight, Truck, RefreshCw } from 'lucide-react';
 import type { CustomerAddress } from '../../services/account';
 import type { CustomerOrder } from '../../services/account';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { useUnsavedChanges } from '../../hooks/useUnsavedChanges';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -65,6 +67,18 @@ declare global {
   }
 }
 
+const initialCheckoutForm = {
+  fullName: '',
+  phone: '',
+  email: '',
+  address: '',
+  city: '',
+  state: 'Delhi',
+  pinCode: '',
+  country: 'India',
+  paymentMethod: 'upi',
+};
+
 let razorpayScriptPromise: Promise<NonNullable<Window['Razorpay']>> | null = null;
 
 const loadRazorpay = () => {
@@ -88,22 +102,28 @@ const loadRazorpay = () => {
 };
 
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
-  const { user, cart, finalTotal, subtotal, shippingFee, discountAmount, couponCode, clearCart, showToast, setLastOrder, navigateTo } = useShop();
+  const {
+    user,
+    authLoading,
+    setIsAuthModalOpen,
+    setIsCheckoutAuthRequired,
+    cart,
+    finalTotal,
+    subtotal,
+    shippingFee,
+    discountAmount,
+    couponCode,
+    clearCart,
+    showToast,
+    setLastOrder,
+    navigateTo,
+  } = useShop();
 
   const [step, setStep] = useState<'details' | 'payment'>('details');
 
   // Form State
-  const [formData, setFormData] = useState({
-    fullName: '',
-    phone: '',
-    email: '',
-    address: '',
-    city: '',
-    state: 'Delhi',
-    pinCode: '',
-    country: 'India',
-    paymentMethod: 'upi',
-  });
+  const [formData, setFormData] = useState(initialCheckoutForm);
+  const [hasDraft, setHasDraft] = useState(false);
 
   const [savedAddresses, setSavedAddresses] = useState<CustomerAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState('');
@@ -112,10 +132,53 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
   const [paymentError, setPaymentError] = useState('');
   const paymentHandledRef = useRef(false);
   const codRequestIdRef = useRef('');
+  const pendingPaymentRef = useRef<RazorpaySuccessResponse | null>(null);
+  const authPromptedRef = useRef(false);
+  const { confirmDiscard: confirmDiscardDraft, markClean } = useUnsavedChanges(isOpen && hasDraft, 'checkout-draft');
+  const requestCheckoutAuth = () => {
+    authPromptedRef.current = true;
+    setIsCheckoutAuthRequired(true);
+    setIsAuthModalOpen(true);
+  };
+
+  const updateFormField = <K extends keyof typeof initialCheckoutForm>(
+    field: K,
+    value: (typeof initialCheckoutForm)[K],
+  ) => {
+    setHasDraft(true);
+    setFormData((current) => ({ ...current, [field]: value }));
+  };
+
+  const resetAndClose = () => {
+    if (!confirmDiscardDraft()) return;
+    setHasDraft(false);
+    setFormData(initialCheckoutForm);
+    setSelectedAddressId('');
+    setErrors({});
+    setStep('details');
+    setPaymentError('');
+    onClose();
+  };
+  const dialogRef = useDialogFocus<HTMLDivElement>(isOpen, resetAndClose);
 
   useEffect(() => {
-    if (isOpen) codRequestIdRef.current = '';
-  }, [isOpen]);
+    if (!isOpen) {
+      authPromptedRef.current = false;
+      setIsCheckoutAuthRequired(false);
+      return;
+    }
+    codRequestIdRef.current = '';
+    if (user) {
+      authPromptedRef.current = false;
+      setIsCheckoutAuthRequired(false);
+      return;
+    }
+    if (!authLoading && !authPromptedRef.current) {
+      authPromptedRef.current = true;
+      setIsCheckoutAuthRequired(true);
+      setIsAuthModalOpen(true);
+    }
+  }, [isOpen, authLoading, user, setIsAuthModalOpen, setIsCheckoutAuthRequired]);
 
   useEffect(() => {
     if (!isOpen || !user) return;
@@ -164,8 +227,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     return () => { isCurrent = false; };
   }, [isOpen, user, showToast]);
 
-  if (!isOpen) return null;
-
   const validateDetails = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.fullName.trim()) newErrors.fullName = 'Please enter your full name';
@@ -187,10 +248,18 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     e.preventDefault();
     if (validateDetails()) {
       setStep('payment');
+    } else {
+      // Focus first error field after state update
+      requestAnimationFrame(() => {
+        const firstError = document.querySelector<HTMLElement>('[aria-invalid="true"]');
+        firstError?.focus();
+      });
     }
   };
 
   const completeOrder = (order: CustomerOrder) => {
+    markClean();
+    setHasDraft(false);
     setIsSubmitting(false);
     setLastOrder(order);
     clearCart();
@@ -216,7 +285,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
   const handlePaymentSuccess = async (payment: RazorpaySuccessResponse) => {
     setIsSubmitting(true);
     try {
-      const token = user ? await user.getIdToken() : '';
+      if (!user) {
+        pendingPaymentRef.current = payment;
+        requestCheckoutAuth();
+        throw new Error('Sign in again to verify your payment. Your order is not complete yet.');
+      }
+      const token = await user.getIdToken();
       const response = await fetch('/api/verify-payment', {
         method: 'POST',
         headers: {
@@ -231,6 +305,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
         }),
       });
       const result = await response.json() as VerifiedOrderResponse;
+      if (response.status === 401) {
+        pendingPaymentRef.current = payment;
+        requestCheckoutAuth();
+        throw new Error(result.error || 'Sign in again to verify your payment. Your order is not complete yet.');
+      }
       if (!response.ok || !result.verified) {
         throw new Error(result.error || 'Payment could not be verified. Please contact support before retrying.');
       }
@@ -268,79 +347,78 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     }
   };
 
+  useEffect(() => {
+    if (!isOpen || !user || !pendingPaymentRef.current) return;
+    const payment = pendingPaymentRef.current;
+    pendingPaymentRef.current = null;
+    void handlePaymentSuccess(payment);
+  }, [isOpen, user]);
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setPaymentError('');
-
+    const customerUser = user;
+    if (!customerUser) {
+      setPaymentError('Sign in or create an account to place this order. Your shopping bag will be saved.');
+      requestCheckoutAuth();
+      return;
+    }
     if (formData.paymentMethod === 'cod') {
-      if (user) {
-        if (!codRequestIdRef.current) codRequestIdRef.current = crypto.randomUUID();
-        setIsSubmitting(true);
-        try {
-          const response = await fetch('/api/create-cod-order', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${await user.getIdToken()}`,
-            },
-            body: JSON.stringify({
-              cart_items: getCartSnapshot(),
-              coupon_code: couponCode,
-              idempotency_key: codRequestIdRef.current,
-              customer: getCustomerDetails(),
-            }),
-          });
-          const result = await response.json() as VerifiedOrderResponse;
-          if (!response.ok || !result.order_id) {
-            throw new Error(result.error || 'Unable to save your COD order. Please try again.');
-          }
-          completeOrder({
-            id: result.order_id,
-            orderId: result.order_id,
-            paymentId: '',
-            createdAt: new Date(),
-            status: result.status || 'confirmed',
-            paymentStatus: result.paymentStatus || 'pending',
-            paymentMethod: result.paymentMethod || 'cod',
-            paymentMethodDetails: result.paymentMethodDetails,
-            amount: result.amount ?? finalTotal,
-            currency: result.currency || 'INR',
-            subtotal: result.subtotal ?? subtotal,
-            discount: result.discount ?? discountAmount,
-            tax: result.tax ?? 0,
-            shipping: result.shipping ?? shippingFee,
-            items: result.items || [],
-            customer: result.customer || getCustomerDetails(),
-          });
-        } catch (error) {
-          setPaymentError(error instanceof Error ? error.message : 'Unable to place your COD order.');
+      if (!codRequestIdRef.current) codRequestIdRef.current = crypto.randomUUID();
+      setIsSubmitting(true);
+      try {
+        const idToken = await customerUser.getIdToken();
+        const response = await fetch('/api/create-cod-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            cart_items: getCartSnapshot(),
+            coupon_code: couponCode,
+            idempotency_key: codRequestIdRef.current,
+            customer: getCustomerDetails(),
+          }),
+        });
+        const result = await response.json() as VerifiedOrderResponse;
+        if (response.status === 401) {
+          setPaymentError(result.error || 'Sign in again to place your order.');
+          requestCheckoutAuth();
           setIsSubmitting(false);
+          return;
         }
-      } else {
-        const guestOrderId = `TSH-${Math.floor(100000 + Math.random() * 900000)}`;
+        if (!response.ok || !result.order_id) {
+          throw new Error(result.error || 'Unable to save your COD order. Please try again.');
+        }
         completeOrder({
-          id: guestOrderId,
-          orderId: guestOrderId,
+          id: result.order_id,
+          orderId: result.order_id,
           paymentId: '',
           createdAt: new Date(),
-          status: 'confirmed',
-          paymentStatus: 'pending',
-          paymentMethod: 'cod',
-          amount: finalTotal,
-          currency: 'INR',
-          subtotal,
-          discount: discountAmount,
-          tax: 0,
-          shipping: shippingFee,
-          items: cart.map(({ product, quantity }) => ({ productId: product.id, name: product.name, image: product.images[0], quantity, price: product.price })),
-          customer: getCustomerDetails(),
+          status: result.status || 'confirmed',
+          paymentStatus: result.paymentStatus || 'pending',
+          paymentMethod: result.paymentMethod || 'cod',
+          paymentMethodDetails: result.paymentMethodDetails,
+          amount: result.amount ?? finalTotal,
+          currency: result.currency || 'INR',
+          subtotal: result.subtotal ?? subtotal,
+          discount: result.discount ?? discountAmount,
+          tax: result.tax ?? 0,
+          shipping: result.shipping ?? shippingFee,
+          items: result.items || [],
+          customer: result.customer || getCustomerDetails(),
         });
+      } catch (error) {
+        setPaymentError(error instanceof Error ? error.message : 'Unable to place your COD order.');
+        setIsSubmitting(false);
       }
       return;
     }
 
     setIsSubmitting(true);
     try {
+      const idToken = await customerUser.getIdToken();
       const key = import.meta.env.VITE_RAZORPAY_KEY_ID;
       if (!key) throw new Error('Razorpay is not configured for this site.');
 
@@ -348,7 +426,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(user ? { Authorization: `Bearer ${await user.getIdToken()}` } : {}),
+          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({
           items: cart.map(({ product, quantity }) => ({ product_id: product.id, quantity })),
@@ -361,6 +439,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
         currency?: string;
         error?: string;
       };
+      if (orderResponse.status === 401) {
+        setPaymentError(orderResult.error || 'Sign in again to place your order.');
+        requestCheckoutAuth();
+        setIsSubmitting(false);
+        return;
+      }
       if (!orderResponse.ok || !orderResult.order_id || !orderResult.amount || !orderResult.currency) {
         throw new Error(orderResult.error || 'Unable to create a payment order. Please try again.');
       }
@@ -405,29 +489,35 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     }
   };
 
-  const resetAndClose = () => {
-    setStep('details');
-    setPaymentError('');
-    onClose();
-  };
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain p-4 sm:p-6 md:p-12 flex justify-center items-center">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain p-2 sm:items-center sm:p-6 md:p-12">
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
         className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
         onClick={resetAndClose}
+        aria-label="Close checkout"
       />
 
-      <div className="relative w-full max-w-2xl bg-[#FAF7F2] rounded-xs shadow-2xl border border-[#EADBCE] z-10 overflow-hidden">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="checkout-dialog-title"
+        aria-busy={isSubmitting}
+        tabIndex={-1}
+        className="relative flex max-h-[calc(100dvh-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-xs border border-[#EADBCE] bg-[#FAF7F2] shadow-2xl sm:max-h-[calc(100dvh-3rem)]"
+      >
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[#EADBCE] flex items-center justify-between bg-[#F4EFEA]">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[#EADBCE] bg-[#F4EFEA] p-3 sm:p-5">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-serif text-lg font-medium text-[#2A0814]">
-                TISHNAGII Express Checkout
+              <span className="font-serif text-base font-medium text-[#2A0814] sm:text-lg">
+                <span id="checkout-dialog-title">TISHNAGII Express Checkout</span>
               </span>
-              <span className="text-[10px] bg-[#380E1C] text-[#FAF7F2] px-2 py-0.5 rounded-xs tracking-wider uppercase font-mono">
+              <span className="hidden rounded-xs bg-[#380E1C] px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-[#FAF7F2] min-[360px]:inline">
                 256-Bit SSL
               </span>
             </div>
@@ -439,66 +529,111 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
           <button
             onClick={resetAndClose}
             aria-label="Close checkout"
-            className="p-1.5 text-[#2A0814] hover:text-[#C49A45] rounded-full hover:bg-[#EADBCE]/50 transition-colors cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full p-1.5 text-[#2A0814] transition-colors hover:bg-[#EADBCE]/50 hover:text-[#C49A45] cursor-pointer touch-manipulation"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6">
+        <div className="checkout-body min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-6">
+          {cart.length === 0 ? (
+            <div className="space-y-4 py-5 text-center">
+              <p className="font-serif text-xl text-[#2A0814]">Your shopping bag is empty</p>
+              <p className="text-sm text-[#4A1525]">Add a piece to your bag before continuing to checkout.</p>
+              <button type="button" onClick={resetAndClose} className="min-h-11 px-5 text-sm font-medium text-[#2A0814] underline underline-offset-4">
+                Return to shopping
+              </button>
+            </div>
+          ) : authLoading ? (
+            <p className="py-8 text-center text-sm text-[#4A1525]" role="status">Checking your account…</p>
+          ) : !user ? (
+            <div className="mx-auto max-w-md space-y-4 py-5 text-center">
+              <Lock className="mx-auto h-7 w-7 text-[#6A4D1D]" aria-hidden="true" />
+              <h3 className="font-serif text-xl text-[#2A0814]">Sign in to continue</h3>
+              {paymentError && <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-left text-xs text-red-800">{paymentError}</p>}
+              <p className="text-sm leading-relaxed text-[#4A1525]">
+                Sign in or create an account to secure your order, save delivery details, and view its status. Your shopping bag is preserved while you sign in.
+              </p>
+              <button
+                type="button"
+                onClick={requestCheckoutAuth}
+                className="min-h-11 w-full bg-[#2A0814] px-5 py-3 text-sm font-semibold text-[#FAF7F2] transition-colors hover:bg-[#380E1C]"
+              >
+                Sign in or create an account
+              </button>
+              <button type="button" onClick={resetAndClose} className="min-h-11 px-5 text-sm text-[#2A0814] underline underline-offset-4">
+                Return to shopping
+              </button>
+            </div>
+          ) : (
+            <>
           {step === 'details' && (
-            <form onSubmit={handleDetailsSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form noValidate onSubmit={handleDetailsSubmit} className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-[#2A0814] mb-1">
+                  <label htmlFor="checkout-name" className="block text-xs font-medium text-[#2A0814] mb-1">
                     Full Name *
                   </label>
                   <input
+                    id="checkout-name"
+                    name="name"
                     type="text"
-                    required
+                    autoComplete="name"
                     value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    placeholder="e.g. Gayatri Devi"
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
+                    onChange={(e) => updateFormField('fullName', e.target.value)}
+                    placeholder="e.g. Gayatri Devi…"
+                    aria-invalid={!!errors.fullName}
+                    aria-describedby={errors.fullName ? 'checkout-name-error' : undefined}
+                    className="w-full rounded-xs border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-base text-[#2A0814] focus:border-[#C49A45] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] sm:text-sm"
                   />
                   {errors.fullName && (
-                    <span className="text-[10px] text-red-600">{errors.fullName}</span>
+                    <span id="checkout-name-error" className="text-[10px] text-red-600" aria-live="polite">{errors.fullName}</span>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[#2A0814] mb-1">
+                  <label htmlFor="checkout-phone" className="block text-xs font-medium text-[#2A0814] mb-1">
                     Mobile Phone (for delivery tracking) *
                   </label>
                   <input
+                    id="checkout-phone"
+                    name="tel"
                     type="tel"
-                    required
+                    autoComplete="tel"
+                    inputMode="numeric"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="e.g. 98200 12345"
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
+                    onChange={(e) => updateFormField('phone', e.target.value)}
+                    placeholder="e.g. 98200 12345…"
+                    aria-invalid={!!errors.phone}
+                    aria-describedby={errors.phone ? 'checkout-phone-error' : undefined}
+                    className="w-full rounded-xs border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-base text-[#2A0814] focus:border-[#C49A45] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] sm:text-sm"
                   />
                   {errors.phone && (
-                    <span className="text-[10px] text-red-600">{errors.phone}</span>
+                    <span id="checkout-phone-error" className="text-[10px] text-red-600" aria-live="polite">{errors.phone}</span>
                   )}
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#2A0814] mb-1">
-                  Email Address (for tax invoice & tracking) *
+                <label htmlFor="checkout-email" className="block text-xs font-medium text-[#2A0814] mb-1">
+                  Email Address (for tax invoice &amp; tracking) *
                 </label>
                 <input
+                  id="checkout-email"
+                  name="email"
                   type="email"
-                  required
+                  autoComplete="email"
+                  spellCheck={false}
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="name@domain.com"
-                  className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
+                  onChange={(e) => updateFormField('email', e.target.value)}
+                  placeholder="name@domain.com…"
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? 'checkout-email-error' : undefined}
+                  className="w-full rounded-xs border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-base text-[#2A0814] focus:border-[#C49A45] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] sm:text-sm"
                 />
                 {errors.email && (
-                  <span className="text-[10px] text-red-600">{errors.email}</span>
+                  <span id="checkout-email-error" className="text-[10px] text-red-600" aria-live="polite">{errors.email}</span>
                 )}
               </div>
 
@@ -509,11 +644,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                   </label>
                   <select
                     id="checkout-saved-address"
+                    name="savedAddress"
                     value={selectedAddressId}
                     onChange={(event) => {
                       const address = savedAddresses.find((item) => item.id === event.target.value);
                       setSelectedAddressId(event.target.value);
                       if (!address) return;
+                      setHasDraft(true);
                       setFormData((current) => ({
                         ...current,
                         fullName: address.fullName,
@@ -525,7 +662,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                         country: address.country || 'India',
                       }));
                     }}
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
+                    className="w-full rounded-xs border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-base text-[#2A0814] focus:border-[#C49A45] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] sm:text-sm"
                   >
                     {savedAddresses.map((address) => (
                       <option key={address.id} value={address.id}>
@@ -538,44 +675,58 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
               )}
 
               <div>
-                <label className="block text-xs font-medium text-[#2A0814] mb-1">
+                <label htmlFor="checkout-address" className="block text-xs font-medium text-[#2A0814] mb-1">
                   Delivery Address & Apartment / Landmark *
                 </label>
                 <textarea
-                  required
+                  id="checkout-address"
+                  name="streetAddress"
                   rows={2}
                   value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="House/Villa No., Street, Landmark..."
-                  className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
+                  onChange={(e) => updateFormField('address', e.target.value)}
+                  placeholder="House/Villa No., Street, Landmark…"
+                  onKeyDown={(event) => {
+                    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+                      event.preventDefault();
+                      event.currentTarget.form?.requestSubmit();
+                    }
+                  }}
+                  aria-invalid={!!errors.address}
+                  aria-describedby={errors.address ? 'checkout-address-error' : undefined}
+                  className="w-full resize-y overflow-y-auto rounded-xs border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2 text-base text-[#2A0814] focus:border-[#C49A45] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] sm:text-sm"
                 />
                 {errors.address && (
-                  <span className="text-[10px] text-red-600">{errors.address}</span>
+                  <span id="checkout-address-error" className="text-[10px] text-red-600" aria-live="polite">{errors.address}</span>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 gap-3 min-[390px]:grid-cols-2 sm:grid-cols-4">
                 <div>
-                  <label className="block text-xs font-medium text-[#2A0814] mb-1">City *</label>
+                  <label htmlFor="checkout-city" className="block text-xs font-medium text-[#2A0814] mb-1">City *</label>
                   <input
+                    id="checkout-city"
+                    name="address-level2"
                     type="text"
-                    required
                     value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    placeholder="e.g. New Delhi"
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
+                    onChange={(e) => updateFormField('city', e.target.value)}
+                    placeholder="e.g. New Delhi…"
+                    aria-invalid={!!errors.city}
+                    aria-describedby={errors.city ? 'checkout-city-error' : undefined}
+                    className="w-full rounded-xs border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-base text-[#2A0814] focus:border-[#C49A45] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] sm:text-sm"
                   />
                   {errors.city && (
-                    <span className="text-[10px] text-red-600">{errors.city}</span>
+                    <span id="checkout-city-error" className="text-[10px] text-red-600" aria-live="polite">{errors.city}</span>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[#2A0814] mb-1">State *</label>
+                  <label htmlFor="checkout-state" className="block text-xs font-medium text-[#2A0814] mb-1">State *</label>
                   <select
+                    id="checkout-state"
+                    name="address-level1"
                     value={formData.state}
-                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-2 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
+                    onChange={(e) => updateFormField('state', e.target.value)}
+                    className="w-full min-w-0 rounded-xs border border-[#EADBCE] bg-[#FAF7F2] px-2 py-2.5 text-base text-[#2A0814] focus:border-[#C49A45] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] sm:text-sm"
                   >
                     <option value="Delhi">Delhi NCR</option>
                     <option value="Maharashtra">Maharashtra</option>
@@ -591,33 +742,40 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[#2A0814] mb-1">
-                    PIN Code *
+                  <label htmlFor="checkout-pin-code" className="block text-xs font-medium text-[#2A0814] mb-1">
+                    <span>PIN Code *</span>
                   </label>
                   <input
+                    id="checkout-pin-code"
+                    name="postal-code"
                     type="text"
-                    required
-                    maxLength={6}
+                    inputMode="numeric"
+                    spellCheck={false}
                     value={formData.pinCode}
-                    onChange={(e) => setFormData({ ...formData, pinCode: e.target.value })}
-                    placeholder="110001"
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs font-mono"
+                    onChange={(e) => updateFormField('pinCode', e.target.value)}
+                    placeholder="110001…"
+                    aria-invalid={!!errors.pinCode}
+                    aria-describedby={errors.pinCode ? 'checkout-pin-code-error' : undefined}
+                    className="w-full rounded-xs border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 font-mono text-base text-[#2A0814] focus:border-[#C49A45] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] sm:text-sm"
                   />
                   {errors.pinCode && (
-                    <span className="text-[10px] text-red-600">{errors.pinCode}</span>
+                    <span id="checkout-pin-code-error" className="text-[10px] text-red-600" aria-live="polite">{errors.pinCode}</span>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[#2A0814] mb-1">Country *</label>
+                  <label htmlFor="checkout-country" className="block text-xs font-medium text-[#2A0814] mb-1">Country *</label>
                   <input
+                    id="checkout-country"
+                    name="country-name"
                     type="text"
-                    required
                     value={formData.country}
-                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    className="w-full bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] rounded-xs"
+                    onChange={(e) => updateFormField('country', e.target.value)}
+                    aria-invalid={!!errors.country}
+                    aria-describedby={errors.country ? 'checkout-country-error' : undefined}
+                    className="w-full rounded-xs border border-[#EADBCE] bg-[#FAF7F2] px-3 py-2.5 text-base text-[#2A0814] focus:border-[#C49A45] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] sm:text-sm"
                   />
-                  {errors.country && <span className="text-[10px] text-red-600">{errors.country}</span>}
+                  {errors.country && <span id="checkout-country-error" className="text-[10px] text-red-600" aria-live="polite">{errors.country}</span>}
                 </div>
               </div>
 
@@ -631,7 +789,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
 
               <button
                 type="submit"
-                className="w-full py-3 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs transition-all flex items-center justify-center gap-2 cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+                className="flex min-h-11 min-w-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xs bg-[#2A0814] py-3 text-xs font-semibold uppercase tracking-widest text-[#FAF7F2] transition-colors hover:bg-[#380E1C] touch-manipulation"
               >
                 <span>Continue to Payment</span>
                 <ArrowRight className="w-4 h-4" />
@@ -665,7 +823,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                         value="upi"
                         checked={formData.paymentMethod === 'upi'}
                         onChange={(e) =>
-                          setFormData({ ...formData, paymentMethod: e.target.value })
+                          updateFormField('paymentMethod', e.target.value)
                         }
                         className="accent-[#380E1C]"
                       />
@@ -697,7 +855,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                         value="card"
                         checked={formData.paymentMethod === 'card'}
                         onChange={(e) =>
-                          setFormData({ ...formData, paymentMethod: e.target.value })
+                          updateFormField('paymentMethod', e.target.value)
                         }
                         className="accent-[#380E1C]"
                       />
@@ -727,7 +885,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                         value="cod"
                         checked={formData.paymentMethod === 'cod'}
                         onChange={(e) =>
-                          setFormData({ ...formData, paymentMethod: e.target.value })
+                          updateFormField('paymentMethod', e.target.value)
                         }
                         className="accent-[#380E1C]"
                       />
@@ -778,9 +936,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 py-3 bg-[#2A0814] hover:bg-[#380E1C] disabled:opacity-60 text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+                  className="flex min-h-11 min-w-11 flex-1 items-center justify-center gap-2 rounded-xs bg-[#2A0814] py-3 text-xs font-semibold uppercase tracking-widest text-[#FAF7F2] shadow-sm transition-[background-color,opacity] hover:bg-[#380E1C] disabled:opacity-60"
                 >
-                  {isSubmitting && <RefreshCw className="h-4 w-4 animate-spin" />}
+                  {isSubmitting && <span aria-hidden="true" className="inline-flex animate-spin"><RefreshCw className="h-4 w-4" /></span>}
                   <span>
                     {formData.paymentMethod === 'cod' ? 'Place COD Order' : 'Pay Securely'} · <span className="tabular-nums">₹{finalTotal.toLocaleString('en-IN')}</span>
                   </span>
@@ -788,7 +946,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
               </div>
             </form>
           )}
-
+            </>
+          )}
         </div>
       </div>
     </div>

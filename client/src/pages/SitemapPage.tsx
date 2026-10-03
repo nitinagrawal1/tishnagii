@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
 import { PRODUCTS, CATEGORIES, BLOG_POSTS } from '@shared/data/mockData';
 import { Globe, FileText, Check, Copy, ArrowRight } from 'lucide-react';
+import { handleInternalLinkClick } from '../utils/navigation';
 
 export const SitemapPage: React.FC = () => {
   const { navigateTo, showToast } = useShop();
@@ -52,11 +53,15 @@ ${BLOG_POSTS.map(
 ).join('\n')}
 </urlset>`;
 
-  const copySitemap = () => {
-    navigator.clipboard.writeText(xmlSitemap);
-    setCopied(true);
-    showToast('Sitemap XML copied to clipboard');
-    setTimeout(() => setCopied(false), 2000);
+  const copySitemap = async () => {
+    try {
+      await navigator.clipboard.writeText(xmlSitemap);
+      setCopied(true);
+      showToast('Sitemap XML copied to clipboard.');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      showToast('Unable to copy the sitemap. Select and copy the XML below.', 'error');
+    }
   };
 
   return (
@@ -83,12 +88,13 @@ ${BLOG_POSTS.map(
           <ul className="space-y-2 text-xs">
             {coreRoutes.map((route) => (
               <li key={route.path} className="flex items-center justify-between">
-                <button
-                  onClick={() => navigateTo(route.page)}
-                  className="text-[#2A0814] hover:text-[#C49A45] font-medium text-left"
+                <a
+                  href={route.path}
+                  onClick={(event) => handleInternalLinkClick(event, () => navigateTo(route.page))}
+                  className="min-h-11 text-[#2A0814] hover:text-[#C49A45] font-medium text-left"
                 >
                   {route.name}
-                </button>
+                </a>
                 <span className="text-[#4A1525]/50 font-mono">{route.path}</span>
               </li>
             ))}
@@ -103,12 +109,13 @@ ${BLOG_POSTS.map(
           <ul className="space-y-2 text-xs">
             {PRODUCTS.map((prod) => (
               <li key={prod.id} className="flex min-w-0 items-start justify-between gap-2">
-                <button
-                  onClick={() => navigateTo('product-detail', prod.slug)}
+                <a
+                  href={`/product/${prod.slug}`}
+                  onClick={(event) => handleInternalLinkClick(event, () => navigateTo('product-detail', prod.slug))}
                   className="min-w-0 flex-1 break-words text-left font-medium text-[#2A0814] hover:text-[#C49A45]"
                 >
                   {prod.name}
-                </button>
+                </a>
                 <span className="shrink-0 font-mono text-[#4A1525]/50"><span className="tabular-nums">₹{prod.price}</span></span>
               </li>
             ))}
@@ -125,12 +132,13 @@ ${BLOG_POSTS.map(
           <ul className="space-y-2 text-xs">
             {CATEGORIES.map((c) => (
               <li key={c.id} className="flex items-center justify-between">
-                <button
-                  onClick={() => navigateTo('shop', undefined, c.id)}
-                  className="text-[#2A0814] hover:text-[#C49A45] font-medium"
+                <a
+                  href={`/shop?category=${encodeURIComponent(c.id)}`}
+                  onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop', undefined, c.id))}
+                  className="min-h-11 text-[#2A0814] hover:text-[#C49A45] font-medium"
                 >
                   {c.name} ({c.hindiName})
-                </button>
+                </a>
                 <span className="text-[#4A1525]/50 font-mono">{c.itemCount} pieces</span>
               </li>
             ))}
@@ -144,12 +152,13 @@ ${BLOG_POSTS.map(
           <ul className="space-y-2 text-xs">
             {BLOG_POSTS.map((b) => (
               <li key={b.id} className="flex min-w-0 items-start justify-between gap-2">
-                <button
-                  onClick={() => navigateTo('blog-detail', b.slug)}
+                <a
+                  href={`/blog/${b.slug}`}
+                  onClick={(event) => handleInternalLinkClick(event, () => navigateTo('blog-detail', b.slug))}
                   className="min-w-0 flex-1 break-words text-left font-medium text-[#2A0814] hover:text-[#C49A45]"
                 >
                   {b.title}
-                </button>
+                </a>
                 <span className="shrink-0 font-mono text-[#4A1525]/50">{b.readTime}</span>
               </li>
             ))}

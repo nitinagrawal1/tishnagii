@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useRef, useState, useEffect } from 'react';
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
@@ -17,13 +17,22 @@ interface ToastNotification {
   id: string;
   message: string;
   type?: 'success' | 'info' | 'error';
+  action?: { label: string; onAction: () => void };
 }
+
+type ToastAction = { label: string; onAction: () => void };
+
+const focusMainContent = () => {
+  document.getElementById('main-content')?.focus({ preventScroll: true });
+};
 
 interface ShopContextType {
   user: User | null;
   authLoading: boolean;
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
+  isCheckoutAuthRequired: boolean;
+  setIsCheckoutAuthRequired: (required: boolean) => void;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -36,6 +45,7 @@ interface ShopContextType {
   currentSlug: string | null;
   currentCategorySlug: string | null;
   navigateTo: (page: PageRoute, slug?: string, categorySlug?: string) => void;
+  registerNavigationGuard: (id: string, shouldBlock: () => boolean) => () => void;
 
   // Cart
   cart: CartItem[];
@@ -69,7 +79,7 @@ interface ShopContextType {
 
   // Toast
   toasts: ToastNotification[];
-  showToast: (message: string, type?: 'success' | 'info' | 'error') => void;
+  showToast: (message: string, type?: 'success' | 'info' | 'error', action?: ToastAction) => void;
   removeToast: (id: string) => void;
 }
 
@@ -82,6 +92,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isCheckoutAuthRequired, setIsCheckoutAuthRequired] = useState(false);
   const [lastOrder, setLastOrder] = useState<CustomerOrder | null>(null);
 
   useEffect(() => onAuthStateChanged(auth, (nextUser) => {
@@ -109,6 +120,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentPage, setCurrentPage] = useState<PageRoute>('home');
   const [currentSlug, setCurrentSlug] = useState<string | null>(null);
   const [currentCategorySlug, setCurrentCategorySlug] = useState<string | null>(null);
+  const navigationGuardsRef = useRef(new Map<string, () => boolean>());
+
+  const registerNavigationGuard = useCallback((id: string, shouldBlock: () => boolean) => {
+    navigationGuardsRef.current.set(id, shouldBlock);
+    return () => {
+      navigationGuardsRef.current.delete(id);
+    };
+  }, []);
 
   // Cart state
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -163,9 +182,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const parseUrl = () => {
       const path = window.location.pathname;
+      const params = new URLSearchParams(window.location.search);
+      setCurrentSlug(null);
+      setCurrentCategorySlug(params.get('category'));
       if (path === '/' || path === '') {
         setCurrentPage('home');
-        setCurrentSlug(null);
       } else if (path.startsWith('/shop')) {
         setCurrentPage('shop');
       } else if (path.startsWith('/categories')) {
@@ -211,14 +232,32 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     parseUrl();
-    const handlePopState = () => parseUrl();
+    const previousScrollRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    const handlePopState = (event: PopStateEvent) => {
+      parseUrl();
+      window.requestAnimationFrame(() => {
+        focusMainContent();
+        window.scrollTo({
+          top: typeof event.state?.scrollY === 'number' ? event.state.scrollY : 0,
+          behavior: 'instant',
+        });
+      });
+    };
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.history.scrollRestoration = previousScrollRestoration;
+    };
   }, []);
 
-  const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
+  const showToast = (
+    message: string,
+    type: 'success' | 'info' | 'error' = 'success',
+    action?: ToastAction,
+  ) => {
     const id = Date.now().toString() + Math.random().toString(36).substring(2, 5);
-    setToasts((prev) => [...prev, { id, message, type }]);
+    setToasts((prev) => [...prev, { id, message, type, action }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3200);
@@ -229,11 +268,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const navigateTo = (page: PageRoute, slug?: string, categorySlug?: string) => {
+    const hasUnsavedChanges = Array.from(navigationGuardsRef.current.values()).some((shouldBlock) => shouldBlock());
+    if (hasUnsavedChanges && !window.confirm('You have unsaved changes that will be lost. Leave this page?')) {
+      return;
+    }
+
     setCurrentPage(page);
     setCurrentSlug(slug || null);
-    if (categorySlug !== undefined) {
-      setCurrentCategorySlug(categorySlug);
-    }
+    setCurrentCategorySlug(categorySlug || null);
 
     let urlPath = '/';
     if (page === 'shop') urlPath = '/shop';
@@ -255,13 +297,21 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     else if (page === 'sitemap') urlPath = '/sitemap';
     else if (page === '404') urlPath = '/404';
 
-    try {
-      window.history.pushState({}, '', urlPath);
-    } catch {
-      // ignore
+    if (page === 'shop' && categorySlug) {
+      urlPath += `?category=${encodeURIComponent(categorySlug)}`;
     }
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const previousState = window.history.state && typeof window.history.state === 'object'
+      ? window.history.state
+      : {};
+    window.history.replaceState({ ...previousState, scrollY: window.scrollY }, '', window.location.href);
+    window.history.pushState({ scrollY: 0 }, '', urlPath);
+    focusMainContent();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      window.scrollTo(0, 0);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Cart operations
@@ -281,8 +331,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const removeFromCart = (productId: string) => {
+    const removedItem = cart.find((item) => item.product.id === productId);
+    if (!removedItem) return;
     setCart((prev) => prev.filter((item) => item.product.id !== productId));
-    showToast('Item removed from cart', 'info');
+    showToast(`${removedItem.product.name} removed from your shopping bag.`, 'info', {
+      label: 'Undo',
+      onAction: () => setCart((prev) => prev.some((item) => item.product.id === productId)
+        ? prev
+        : [...prev, removedItem]),
+    });
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
@@ -308,10 +365,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setWishlist((prev) => {
       const exists = prev.some((item) => item.id === product.id);
       if (exists) {
-        showToast(`Removed "${product.name}" from wishlist`, 'info');
+        showToast(`Removed “${product.name}” from your wishlist.`, 'info', {
+          label: 'Undo',
+          onAction: () => setWishlist((current) => current.some((item) => item.id === product.id)
+            ? current
+            : [...current, product]),
+        });
         return prev.filter((item) => item.id !== product.id);
       } else {
-        showToast(`Saved "${product.name}" to wishlist`);
+        showToast(`Saved “${product.name}” to your wishlist.`);
         return [...prev, product];
       }
     });
@@ -363,6 +425,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         authLoading,
         isAuthModalOpen,
         setIsAuthModalOpen,
+        isCheckoutAuthRequired,
+        setIsCheckoutAuthRequired,
         signInWithEmail,
         signUpWithEmail,
         signInWithGoogle,
@@ -373,6 +437,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentSlug,
         currentCategorySlug,
         navigateTo,
+        registerNavigationGuard,
         cart,
         addToCart,
         removeFromCart,

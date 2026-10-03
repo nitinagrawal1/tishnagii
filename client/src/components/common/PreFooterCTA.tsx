@@ -1,6 +1,7 @@
 import React from 'react';
 import { useShop } from '../../context/ShopContext';
 import { ASSETS } from '@shared/data/mockData';
+import { handleInternalLinkClick } from '../../utils/navigation';
 
 export const PreFooterCTA: React.FC = () => {
   const { navigateTo } = useShop();
@@ -18,7 +19,10 @@ export const PreFooterCTA: React.FC = () => {
             <img
               src={ASSETS.banquetCelebrationTable}
               alt="Celebratory feast table with TISHNAGII handcrafted jewellery and crystal tableware"
+              width={1600}
+              height={700}
               referrerPolicy="no-referrer"
+              loading="lazy"
               className="absolute inset-0 w-full h-full object-cover object-center select-none group-hover:scale-[1.02] transition-transform duration-700 ease-out"
             />
 
@@ -39,12 +43,13 @@ export const PreFooterCTA: React.FC = () => {
 
               {/* Dotted Underline Inquiry Link matching reference design */}
               <div className="pt-2 sm:pt-4">
-                <button
-                  onClick={() => navigateTo('contact')}
-                  className="inline-block font-serif text-xs sm:text-sm md:text-base text-[#FAF7F2] hover:text-[#D4AE58] transition-colors border-b border-dotted border-white/80 hover:border-[#D4AE58] pb-1 cursor-pointer tracking-wider font-light"
+                <a
+                  href="/contact"
+                  onClick={(event) => handleInternalLinkClick(event, () => navigateTo('contact'))}
+                  className="inline-flex min-h-11 items-center border-b border-dotted border-white/80 pb-1 font-serif text-xs font-light tracking-wider text-[#FAF7F2] transition-colors hover:border-[#D4AE58] hover:text-[#D4AE58] sm:text-sm md:text-base"
                 >
                   Wholesale Inquiries
-                </button>
+                </a>
               </div>
             </div>
 

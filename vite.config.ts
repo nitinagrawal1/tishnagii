@@ -4,18 +4,19 @@ import path from 'path';
 import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
+  const projectRoot = import.meta.dirname;
   return {
-    root: path.resolve(__dirname, 'client'),
-    envDir: path.resolve(__dirname),
+    root: path.resolve(projectRoot, 'client'),
+    envDir: projectRoot,
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, 'client/src'),
-        '@shared': path.resolve(__dirname, 'shared'),
+        '@': path.resolve(projectRoot, 'client/src'),
+        '@shared': path.resolve(projectRoot, 'shared'),
       },
     },
     build: {
-      outDir: path.resolve(__dirname, 'client/dist'),
+      outDir: path.resolve(projectRoot, 'client/dist'),
     },
     server: {
       // Server options

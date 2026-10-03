@@ -5,6 +5,7 @@ import { ProductCard } from '../components/common/ProductCard';
 import { AskAwayFAQ } from '../components/home/AskAwayFAQ';
 import { BoldGraphicHero } from '../components/home/BoldGraphicHero';
 import { ArrowRight } from 'lucide-react';
+import { handleInternalLinkClick } from '../utils/navigation';
 
 export const HomePage: React.FC = () => {
   const { navigateTo } = useShop();
@@ -27,26 +28,31 @@ export const HomePage: React.FC = () => {
               Explore by Jewellery Suite
             </h2>
           </div>
-          <button
-            onClick={() => navigateTo('categories')}
-            className="mt-3 md:mt-0 text-xs font-semibold text-[#2A0814] hover:text-[#C49A45] flex items-center gap-1.5 transition-colors cursor-pointer group"
+          <a
+            href="/categories"
+            onClick={(event) => handleInternalLinkClick(event, () => navigateTo('categories'))}
+            className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-xs font-semibold text-[#2A0814] transition-colors hover:text-[#C49A45] md:mt-0 group"
           >
             <span>View All Categories</span>
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-          </button>
+            <span className="transition-transform group-hover:translate-x-1"><ArrowRight className="w-3.5 h-3.5" /></span>
+          </a>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
           {CATEGORIES.map((cat) => (
-            <div
+            <a
               key={cat.id}
-              onClick={() => navigateTo('shop', undefined, cat.id)}
-              className="group cursor-pointer flex flex-col bg-[#F4EFEA] border border-[#EADBCE] rounded-xs overflow-hidden hover:border-[#C49A45] transition-all"
+              href={`/shop?category=${encodeURIComponent(cat.id)}`}
+              onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop', undefined, cat.id))}
+              className="group flex min-w-0 cursor-pointer flex-col overflow-hidden rounded-xs border border-[#EADBCE] bg-[#F4EFEA] transition-colors hover:border-[#C49A45]"
             >
               <div className="aspect-square overflow-hidden bg-[#FAF7F2]">
                 <img
                   src={cat.image}
                   alt={cat.name}
+                  width={600}
+                  height={600}
+                  loading="lazy"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -59,7 +65,7 @@ export const HomePage: React.FC = () => {
                   {cat.itemCount} Designs
                 </span>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </section>
@@ -75,13 +81,14 @@ export const HomePage: React.FC = () => {
               Heirloom Statements of the Season
             </h2>
           </div>
-          <button
-            onClick={() => navigateTo('shop')}
-            className="mt-3 md:mt-0 text-xs font-semibold text-[#2A0814] hover:text-[#C49A45] flex items-center gap-1.5 transition-colors cursor-pointer group"
+          <a
+            href="/shop"
+            onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop'))}
+            className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-xs font-semibold text-[#2A0814] transition-colors hover:text-[#C49A45] md:mt-0 group"
           >
             <span>Browse Full Catalogue</span>
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-          </button>
+            <span className="transition-transform group-hover:translate-x-1"><ArrowRight className="w-3.5 h-3.5" /></span>
+          </a>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -102,7 +109,10 @@ export const HomePage: React.FC = () => {
                 <img
                   src={ASSETS.artisanCraftsmanship}
                   alt="Master Karigar handcrafting TISHNAGII jewellery in Jaipur"
+                  width={1200}
+                  height={900}
                   referrerPolicy="no-referrer"
+                  loading="lazy"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2A0814]/80 via-transparent to-transparent pointer-events-none" />
@@ -144,13 +154,14 @@ export const HomePage: React.FC = () => {
               </div>
 
               <div className="pt-2">
-                <button
-                  onClick={() => navigateTo('about')}
-                  className="py-3 px-6 bg-[#FAF7F2] hover:bg-[#EADBCE] text-[#2A0814] text-xs uppercase tracking-widest font-semibold rounded-xs transition-colors flex items-center gap-2 cursor-pointer"
+                <a
+                  href="/about"
+                  onClick={(event) => handleInternalLinkClick(event, () => navigateTo('about'))}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-xs bg-[#FAF7F2] px-6 py-3 text-xs font-semibold uppercase tracking-widest text-[#2A0814] transition-colors hover:bg-[#EADBCE]"
                 >
                   <span>Read The TISHNAGII Story</span>
                   <ArrowRight className="w-4 h-4" />
-                </button>
+                </a>
               </div>
             </div>
 
@@ -169,13 +180,14 @@ export const HomePage: React.FC = () => {
               The TISHNAGII Bestsellers
             </h2>
           </div>
-          <button
-            onClick={() => navigateTo('shop')}
-            className="mt-3 md:mt-0 text-xs font-semibold text-[#2A0814] hover:text-[#C49A45] flex items-center gap-1.5 transition-colors cursor-pointer group"
+          <a
+            href="/shop"
+            onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop'))}
+            className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-xs font-semibold text-[#2A0814] transition-colors hover:text-[#C49A45] md:mt-0 group"
           >
             <span>View All Bestsellers</span>
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-          </button>
+            <span className="transition-transform group-hover:translate-x-1"><ArrowRight className="w-3.5 h-3.5" /></span>
+          </a>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -251,6 +263,9 @@ export const HomePage: React.FC = () => {
               <img
                 src={ASSETS.patronSangeet}
                 alt="Tishnagii patron wearing Kundan necklace at a wedding"
+                width={600}
+                height={800}
+                loading="lazy"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
               />
@@ -273,6 +288,9 @@ export const HomePage: React.FC = () => {
               <img
                 src={ASSETS.patronTempleJhumka}
                 alt="Tishnagii patron wearing temple jhumkas"
+                width={600}
+                height={800}
+                loading="lazy"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
               />
@@ -295,6 +313,9 @@ export const HomePage: React.FC = () => {
               <img
                 src={ASSETS.patronEmerald}
                 alt="Tishnagii patron dressed in emerald bridal suite"
+                width={600}
+                height={800}
+                loading="lazy"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
               />
@@ -316,6 +337,9 @@ export const HomePage: React.FC = () => {
               <img
                 src={ASSETS.patronFestiveKadas}
                 alt="Tishnagii festive patrons sharing on Instagram"
+                width={600}
+                height={800}
+                loading="lazy"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
@@ -358,6 +382,9 @@ export const HomePage: React.FC = () => {
               <img
                 src={ASSETS.heroCampaign}
                 alt="Tishnagii bridal patron celebrating"
+                width={600}
+                height={800}
+                loading="lazy"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
               />

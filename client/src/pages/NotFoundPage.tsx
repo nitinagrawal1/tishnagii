@@ -1,6 +1,7 @@
 import React from 'react';
 import { useShop } from '../context/ShopContext';
 import { ArrowRight, Compass } from 'lucide-react';
+import { handleInternalLinkClick } from '../utils/navigation';
 
 export const NotFoundPage: React.FC = () => {
   const { navigateTo } = useShop();
@@ -24,19 +25,21 @@ export const NotFoundPage: React.FC = () => {
       </p>
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-        <button
-          onClick={() => navigateTo('home')}
-          className="w-full sm:w-auto py-3 px-6 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs transition-colors cursor-pointer"
+        <a
+          href="/"
+          onClick={(event) => handleInternalLinkClick(event, () => navigateTo('home'))}
+          className="flex min-h-11 w-full items-center justify-center rounded-xs bg-[#2A0814] px-6 py-3 text-xs font-semibold uppercase tracking-widest text-[#FAF7F2] transition-colors hover:bg-[#380E1C] sm:w-auto"
         >
           Return to Sanctuary (Home)
-        </button>
-        <button
-          onClick={() => navigateTo('shop')}
-          className="w-full sm:w-auto py-3 px-6 border border-[#EADBCE] text-[#2A0814] hover:bg-[#F4EFEA] text-xs uppercase tracking-widest font-semibold rounded-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+        </a>
+        <a
+          href="/shop"
+          onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop'))}
+          className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xs border border-[#EADBCE] px-6 py-3 text-xs font-semibold uppercase tracking-widest text-[#2A0814] transition-colors hover:bg-[#F4EFEA] sm:w-auto"
         >
           <span>Explore All Jewellery</span>
           <ArrowRight className="w-3.5 h-3.5" />
-        </button>
+        </a>
       </div>
     </div>
   );

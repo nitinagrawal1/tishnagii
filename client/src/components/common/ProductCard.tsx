@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Product } from '@shared/types';
 import { useShop } from '../../context/ShopContext';
 import { Heart, ShoppingBag, Eye, Star } from 'lucide-react';
+import { handleInternalLinkClick } from '../../utils/navigation';
 
 interface ProductCardProps {
   product: Product;
   priority?: boolean;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) => {
   const { navigateTo, addToCart, toggleWishlist, isInWishlist } = useShop();
   const [imageError, setImageError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -21,7 +22,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <div
-      className="group relative flex flex-col bg-[#FAF7F2] border border-[#EADBCE] rounded-sm overflow-hidden transition-all duration-300 hover:border-[#C49A45]/60 hover:shadow-md"
+      className="group relative flex min-w-0 flex-col overflow-hidden rounded-sm border border-[#EADBCE] bg-[#FAF7F2] transition-[border-color,box-shadow] duration-300 hover:border-[#C49A45]/60 hover:shadow-md"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -31,8 +32,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <img
             src={currentImage}
             alt={product.name}
+            width={800}
+            height={800}
             referrerPolicy="no-referrer"
-            loading="lazy"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
             onError={() => setImageError(true)}
             className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
           />
@@ -66,7 +70,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             toggleWishlist(product);
           }}
           aria-label={isFavorited ? 'Remove from wishlist' : 'Add to wishlist'}
-          className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+          className={`absolute right-3 top-3 flex min-h-11 min-w-11 items-center justify-center rounded-full transition-colors ${
             isFavorited
               ? 'bg-[#4A1525] text-[#FAF7F2]'
               : 'bg-[#FAF7F2]/80 hover:bg-[#FAF7F2] text-[#2A0814] hover:text-[#4A1525]'
@@ -76,14 +80,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </button>
 
         {/* Quick View & Add Overlay on Desktop Hover */}
-        <div className="absolute inset-x-3 bottom-3 flex items-center gap-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
-          <button
-            onClick={() => navigateTo('product-detail', product.slug)}
-            className="flex-1 py-2 px-3 bg-[#FAF7F2]/95 hover:bg-[#FAF7F2] text-[#2A0814] text-xs font-medium tracking-wide border border-[#EADBCE] rounded-xs shadow-xs transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+        <div className="absolute inset-x-3 bottom-3 flex items-center gap-2 translate-y-2 opacity-0 transition-[opacity,transform] duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100">
+          <a
+            href={`/product/${product.slug}`}
+            onClick={(event) => handleInternalLinkClick(event, () => navigateTo('product-detail', product.slug))}
+            className="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xs border border-[#EADBCE] bg-[#FAF7F2]/95 px-3 py-2 text-xs font-medium tracking-wide text-[#2A0814] shadow-xs transition-colors hover:bg-[#FAF7F2]"
           >
             <Eye className="w-3.5 h-3.5" />
             <span>View Details</span>
-          </button>
+          </a>
           <button
             onClick={() => addToCart(product)}
             className="py-2 px-3 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs font-medium tracking-wide rounded-xs shadow-xs transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
@@ -113,11 +118,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           {/* Product Title */}
-          <h3
-            onClick={() => navigateTo('product-detail', product.slug)}
-            className="font-serif text-base text-[#1C1819] hover:text-[#4A1525] font-medium transition-colors cursor-pointer break-words leading-snug"
-          >
-            {product.name}
+          <h3 className="break-words font-serif text-base font-medium leading-snug text-[#1C1819] transition-colors hover:text-[#4A1525]">
+            <a
+              href={`/product/${product.slug}`}
+              onClick={(event) => handleInternalLinkClick(event, () => navigateTo('product-detail', product.slug))}
+            >
+              {product.name}
+            </a>
           </h3>
 
           {/* Hindi Script subtitled mark */}

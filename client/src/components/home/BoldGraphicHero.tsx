@@ -1,10 +1,14 @@
 import React from 'react';
 import { useShop } from '../../context/ShopContext';
 import { ASSETS } from '@shared/data/mockData';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Pause, Play } from 'lucide-react';
+import { useState } from 'react';
+import { preload } from 'react-dom';
+import { handleInternalLinkClick } from '../../utils/navigation';
 
 export const BoldGraphicHero: React.FC = () => {
   const { navigateTo } = useShop();
+  const [isTickerPaused, setIsTickerPaused] = useState(false);
 
   const tickerItems = [
     { text: '22K Antique Micron Gold', bold: true },
@@ -18,6 +22,8 @@ export const BoldGraphicHero: React.FC = () => {
     { text: 'No Heavy Ear Tension', bold: true },
     { text: 'Signature Velvet Box', bold: false },
   ];
+
+  preload(ASSETS.heroCandidKundan, { as: 'image', fetchPriority: 'high' });
 
   return (
     <section className="w-full px-3 sm:px-6 md:px-8 pt-2 sm:pt-4 pb-4">
@@ -34,13 +40,14 @@ export const BoldGraphicHero: React.FC = () => {
               Centuries-old Jaipur karigari meets hypoallergenic brass and 22-karat antique micron gold for modern adornment.
             </p>
 
-            <button
-              onClick={() => navigateTo('shop')}
+            <a
+              href="/shop"
+              onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop'))}
               className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#2A0814] px-7 py-3 text-xs font-semibold uppercase tracking-wider text-[#FAF7F2] transition-colors hover:bg-[#380E1C] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C49A45] sm:text-sm group"
             >
               <span>Shop Tishnagii</span>
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </button>
+              <span className="transition-transform group-hover:translate-x-1"><ArrowRight className="h-4 w-4" /></span>
+            </a>
           </div>
         </div>
 
@@ -48,6 +55,10 @@ export const BoldGraphicHero: React.FC = () => {
           <img
             src={ASSETS.heroCandidKundan}
             alt="Artisanal 22K Kundan choker necklace being fastened in an intimate moment"
+            width={1600}
+            height={1200}
+            loading="eager"
+            fetchPriority="high"
             referrerPolicy="no-referrer"
             className="block h-auto w-full select-none"
           />
@@ -60,15 +71,24 @@ export const BoldGraphicHero: React.FC = () => {
       </div>
 
       {/* 3. Infinite Smooth Marquee Ticker running right below the card */}
-      <div className="w-full bg-[#FAF7F2] text-[#2A0814] py-3.5 overflow-hidden border-y border-[#EADBCE] mt-3 rounded-xl shadow-xs">
-        <div className="animate-marquee flex items-center gap-8 sm:gap-12 whitespace-nowrap text-xs sm:text-[13px] tracking-wider uppercase">
+      <div className="flex w-full items-center gap-3 overflow-hidden rounded-xl border-y border-[#EADBCE] bg-[#FAF7F2] py-2.5 text-[#2A0814] shadow-xs mt-3">
+        <button
+          type="button"
+          aria-label={isTickerPaused ? 'Resume craftsmanship highlights' : 'Pause craftsmanship highlights'}
+          aria-pressed={isTickerPaused}
+          onClick={() => setIsTickerPaused((paused) => !paused)}
+          className="ml-2 flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full text-[#2A0814] transition-colors hover:bg-[#F4EFEA] focus-visible:ring-2 focus-visible:ring-[#A77E2C]"
+        >
+          {isTickerPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+        </button>
+        <div className={`animate-marquee flex items-center gap-8 whitespace-nowrap text-xs uppercase tracking-wider sm:gap-12 sm:text-[13px] ${isTickerPaused ? 'animate-marquee-paused' : ''}`}>
           {/* Loop twice for continuous infinite marquee */}
           {[...tickerItems, ...tickerItems].map((item, idx) => (
-            <div key={idx} className="flex items-center gap-8 sm:gap-12 shrink-0">
+            <div key={idx} aria-hidden={idx >= tickerItems.length} className="flex shrink-0 items-center gap-8 sm:gap-12">
               <span className={item.bold ? 'font-bold text-[#2A0814]' : 'font-normal text-[#4A1525]/75'}>
                 {item.text}
               </span>
-              <span className="text-[#C49A45] font-serif text-sm">✦</span>
+              <span aria-hidden="true" className="text-[#C49A45] font-serif text-sm">✦</span>
             </div>
           ))}
         </div>

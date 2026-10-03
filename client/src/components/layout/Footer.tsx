@@ -1,18 +1,24 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { ShieldCheck, Sparkles, Truck, RefreshCw, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { handleInternalLinkClick } from '../../utils/navigation';
 
 export const Footer: React.FC = () => {
   const { navigateTo, showToast } = useShop();
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [newsletterError, setNewsletterError] = useState('');
+  const newsletterEmailRef = useRef<HTMLInputElement>(null);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newsletterEmail || !newsletterEmail.includes('@')) {
-      showToast('Please enter a valid email address', 'error');
+    const email = newsletterEmail.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setNewsletterError('Enter a valid email address.');
+      newsletterEmailRef.current?.focus();
       return;
     }
+    setNewsletterError('');
     setIsSubscribed(true);
     showToast('Welcome to the TISHNAGII Gazette! Check your inbox for your 10% welcome code.');
     setNewsletterEmail('');
@@ -73,14 +79,14 @@ export const Footer: React.FC = () => {
           
           {/* Brand Story Column (2 cols wide on desktop) */}
           <div className="lg:col-span-2 space-y-4">
-            <button type="button" className="block text-left cursor-pointer touch-manipulation focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0" onClick={() => navigateTo('home')}>
+            <a href="/" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('home'))} className="block min-h-11 min-w-11 text-left touch-manipulation focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45]">
               <span className="font-serif text-3xl font-medium tracking-[0.25em] text-[#FAF7F2]">
                 TISHNAGII
               </span>
               <div className="text-xs tracking-[0.25em] text-[#C49A45] mt-1 font-light">
                 तिश्नगी · ETERNAL YEARNING FOR BEAUTY
               </div>
-            </button>
+            </a>
 
             <p className="text-sm text-[#FAF7F2]/70 leading-relaxed max-w-sm">
               Born from the poetic Urdu word <em className="text-[#C49A45] font-serif not-italic">Tishnagi</em>, representing a deep, insatiable thirst for timeless art. We unite 400-year-old Rajasthani karigar traditions with contemporary comfort, making regal Kundan, Polki, and temple jewellery effortless to wear and cherish.
@@ -108,32 +114,32 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2 text-sm text-[#FAF7F2]/80">
               <li>
-                <a href="/shop" onClick={(e) => { e.preventDefault(); navigateTo('shop', undefined, 'necklaces'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
+                <a href="/shop?category=necklaces" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop', undefined, 'necklaces'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Necklaces & Chokers
                 </a>
               </li>
               <li>
-                <a href="/shop" onClick={(e) => { e.preventDefault(); navigateTo('shop', undefined, 'earrings'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
+                <a href="/shop?category=earrings" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop', undefined, 'earrings'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Earrings & Temple Jhumkas
                 </a>
               </li>
               <li>
-                <a href="/shop" onClick={(e) => { e.preventDefault(); navigateTo('shop', undefined, 'bridal-sets'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
+                <a href="/shop?category=bridal-sets" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop', undefined, 'bridal-sets'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Royal Bridal Suites
                 </a>
               </li>
               <li>
-                <a href="/shop" onClick={(e) => { e.preventDefault(); navigateTo('shop', undefined, 'bangles'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
+                <a href="/shop?category=bangles" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop', undefined, 'bangles'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Bangles & Screw Kadas
                 </a>
               </li>
               <li>
-                <a href="/shop" onClick={(e) => { e.preventDefault(); navigateTo('shop', undefined, 'maang-tikka'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
+                <a href="/shop?category=maang-tikka" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop', undefined, 'maang-tikka'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Maang Tikka & Passa
                 </a>
               </li>
               <li>
-                <a href="/shop" onClick={(e) => { e.preventDefault(); navigateTo('shop', undefined, 'rings'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
+                <a href="/shop?category=rings" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop', undefined, 'rings'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Cocktail Rings
                 </a>
               </li>
@@ -147,32 +153,32 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2 text-sm text-[#FAF7F2]/80">
               <li>
-                <a href="/contact" onClick={(e) => { e.preventDefault(); navigateTo('contact'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
+                <a href="/contact" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('contact'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Bespoke Bridal Concierge
                 </a>
               </li>
               <li>
-                <a href="/faq" onClick={(e) => { e.preventDefault(); navigateTo('faq'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
+                <a href="/faq" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('faq'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Frequently Asked Questions
                 </a>
               </li>
               <li>
-                <a href="/shipping" onClick={(e) => { e.preventDefault(); navigateTo('shipping'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
+                <a href="/shipping" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shipping'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Shipping & Pan-India Delivery
                 </a>
               </li>
               <li>
-                <a href="/returns" onClick={(e) => { e.preventDefault(); navigateTo('returns'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
+                <a href="/returns" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('returns'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   7-Day Returns & Refunds
                 </a>
               </li>
               <li>
-                <a href="/about" onClick={(e) => { e.preventDefault(); navigateTo('about'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
+                <a href="/about" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('about'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Our Karigars & Craft Story
                 </a>
               </li>
               <li>
-                <a href="/blog" onClick={(e) => { e.preventDefault(); navigateTo('blog'); }} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
+                <a href="/blog" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('blog'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
                   Journal
                 </a>
               </li>
@@ -194,14 +200,24 @@ export const Footer: React.FC = () => {
                 <span>You are subscribed. Use code <strong>ROYAL10</strong> at checkout!</span>
               </div>
             ) : (
-              <form onSubmit={handleSubscribe} className="space-y-2">
+              <form noValidate onSubmit={handleSubscribe} className="space-y-2">
                 <div className="relative">
                   <input
+                    ref={newsletterEmailRef}
+                    name="email"
                     type="email"
+                    autoComplete="email"
+                    required
+                    spellCheck={false}
                     value={newsletterEmail}
-                    onChange={(e) => setNewsletterEmail(e.target.value)}
-                    placeholder="Enter your email"
+                    onChange={(e) => {
+                      setNewsletterEmail(e.target.value);
+                      setNewsletterError('');
+                    }}
+                    placeholder="name@example.com…"
                     aria-label="Email for newsletter"
+                    aria-invalid={Boolean(newsletterError)}
+                    aria-describedby={newsletterError ? 'newsletter-email-error' : undefined}
                     className="w-full bg-[#1B060D] border border-[#380E1C] px-3 py-2 text-xs text-[#FAF7F2] placeholder-[#FAF7F2]/40 rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                   />
                   <button
@@ -212,6 +228,11 @@ export const Footer: React.FC = () => {
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
+                {newsletterError && (
+                  <p id="newsletter-email-error" className="text-xs text-[#FFD5D5]" role="alert" aria-live="polite">
+                    {newsletterError}
+                  </p>
+                )}
                 <span className="text-[11px] text-[#FAF7F2]/50 block">
                   We respect your privacy. Zero spam ever.
                 </span>
@@ -225,15 +246,15 @@ export const Footer: React.FC = () => {
           <div className="flex flex-wrap items-center gap-4">
             <span>© {new Date().getFullYear()} TISHNAGII JEWELS LLP. All rights reserved.</span>
             <span>·</span>
-            <a href="/privacy" onClick={(e) => { e.preventDefault(); navigateTo('privacy'); }} className="hover:text-[#FAF7F2] transition-colors underline">
+            <a href="/privacy" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('privacy'))} className="hover:text-[#FAF7F2] transition-colors underline">
               Privacy Policy
             </a>
             <span>·</span>
-            <a href="/terms" onClick={(e) => { e.preventDefault(); navigateTo('terms'); }} className="hover:text-[#FAF7F2] transition-colors underline">
+            <a href="/terms" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('terms'))} className="hover:text-[#FAF7F2] transition-colors underline">
               Terms of Service
             </a>
             <span>·</span>
-            <a href="/sitemap" onClick={(e) => { e.preventDefault(); navigateTo('sitemap'); }} className="hover:text-[#FAF7F2] transition-colors underline">
+            <a href="/sitemap" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('sitemap'))} className="hover:text-[#FAF7F2] transition-colors underline">
               Sitemap & Search Index
             </a>
           </div>

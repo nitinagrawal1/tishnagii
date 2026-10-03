@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { getAuthErrorMessage } from '../../firebase';
 import { X, RefreshCw } from 'lucide-react';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -9,7 +10,16 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const { user, authLoading, signInWithEmail, signUpWithEmail, signInWithGoogle, signOutUser } = useShop();
+  const {
+    user,
+    authLoading,
+    isCheckoutAuthRequired,
+    signInWithEmail,
+    signUpWithEmail,
+    signInWithGoogle,
+    signOutUser,
+  } = useShop();
+  const dialogRef = useDialogFocus<HTMLElement>(isOpen, onClose);
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,7 +52,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 z-60 overflow-y-auto overscroll-contain p-4 flex items-center justify-center" role="presentation">
       <button
         type="button"
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs touch-manipulation"
         onClick={onClose}
         aria-label="Close account dialog"
       />
@@ -50,26 +60,34 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         role="dialog"
         aria-modal="true"
         aria-labelledby="account-dialog-title"
+        tabIndex={-1}
+        ref={dialogRef}
         className="relative z-10 w-full max-w-md overflow-hidden border border-ivory-200 bg-ivory-50 shadow-2xl"
       >
         <div className="flex items-center justify-between border-b border-ivory-200 bg-ivory-100 px-5 py-4">
           <div>
             <h2 id="account-dialog-title" className="font-serif text-lg font-medium text-burgundy-900">
-              {user ? 'Your TISHNAGII account' : mode === 'signin' ? 'Welcome back' : 'Create your account'}
+              {user
+                ? 'Your TISHNAGII account'
+                : isCheckoutAuthRequired
+                  ? mode === 'signin' ? 'Sign in to complete your order' : 'Create an account to complete your order'
+                  : mode === 'signin' ? 'Welcome back' : 'Create your account'}
             </h2>
             <p className="text-xs text-burgundy-700/70">
               {user
                 ? 'Your account is ready.'
-                : mode === 'signin'
-                  ? 'Sign in to continue to your account.'
-                  : 'Create an account to save your favorites.'}
+                : isCheckoutAuthRequired
+                  ? 'Your shopping bag is saved. After you sign in, we’ll return you to checkout.'
+                  : mode === 'signin'
+                    ? 'Sign in to continue to your account.'
+                    : 'Create an account to save your favorites.'}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close account dialog"
-            className="rounded-full p-1.5 text-burgundy-900 transition-colors hover:bg-ivory-200/50 hover:text-gold-500 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+            className="rounded-full p-1.5 text-burgundy-900 transition-colors hover:bg-ivory-200/50 hover:text-gold-500 touch-manipulation"
           >
             <X className="h-5 w-5" />
           </button>
@@ -77,7 +95,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
         <div className="p-5 sm:p-6">
           {authLoading ? (
-            <p className="py-5 text-center text-sm text-burgundy-700/70">Checking your session...</p>
+            <p className="py-5 text-center text-sm text-burgundy-700/70">Checking your session…</p>
           ) : user ? (
             <div className="space-y-5">
               <div className="border border-ivory-200 bg-white/50 p-4">
@@ -94,7 +112,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 onClick={() => runAuthAction(signOutUser)}
                 className="w-full border border-burgundy-900 px-4 py-3 text-[16px] sm:text-sm font-medium text-burgundy-900 transition-colors hover:bg-burgundy-900 hover:text-ivory-50 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation flex items-center justify-center gap-2"
               >
-                {isSubmitting && <RefreshCw className="h-4 w-4 animate-spin" />}
+                {isSubmitting && <span aria-hidden="true" className="mr-2 inline-flex animate-spin"><RefreshCw className="h-4 w-4" /></span>}
                 Sign out
               </button>
             </div>
@@ -107,8 +125,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   </label>
                   <input
                     id="account-email"
+                    name="email"
                     type="email"
                     autoComplete="email"
+                    spellCheck={false}
                     required
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
@@ -121,6 +141,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   </label>
                   <input
                     id="account-password"
+                    name="password"
                     type="password"
                     autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                     minLength={6}
@@ -134,9 +155,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-burgundy-900 px-4 py-3 text-[16px] sm:text-sm font-medium text-ivory-50 transition-colors hover:bg-burgundy-700 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+                  className="w-full bg-burgundy-900 px-4 py-3 text-[16px] sm:text-sm font-medium text-ivory-50 transition-colors hover:bg-burgundy-700 disabled:cursor-not-allowed disabled:opacity-60 touch-manipulation flex items-center justify-center gap-2"
                 >
-                  {isSubmitting && <RefreshCw className="h-4 w-4 animate-spin" />}
+                  {isSubmitting && <span aria-hidden="true" className="inline-flex animate-spin"><RefreshCw className="h-4 w-4" /></span>}
                   {mode === 'signin' ? 'Sign in with email' : 'Create account'}
                 </button>
               </form>
@@ -153,6 +174,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 onClick={() => runAuthAction(signInWithGoogle, true)}
                 className="w-full border border-ivory-200 bg-white/60 px-4 py-3 text-sm font-medium text-burgundy-900 transition-colors hover:bg-ivory-100 disabled:cursor-not-allowed disabled:opacity-60"
               >
+                {isSubmitting && <span aria-hidden="true" className="mr-2 inline-flex animate-spin"><RefreshCw className="h-4 w-4" /></span>}
                 Continue with Google
               </button>
 

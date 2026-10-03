@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { X, Trash2, Plus, Minus, ArrowRight, ShieldCheck, Tag, ShoppingBag } from 'lucide-react';
 import { EmptyState } from '../common/EmptyState';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
+import { handleInternalLinkClick } from '../../utils/navigation';
 
 interface CartDrawerProps {
   onOpenCheckout: () => void;
@@ -25,6 +27,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
     finalTotal,
     navigateTo,
   } = useShop();
+  const dialogRef = useDialogFocus<HTMLDivElement>(isCartDrawerOpen, () => setIsCartDrawerOpen(false));
 
   const [inputCoupon, setInputCoupon] = useState('');
   const [couponError, setCouponError] = useState('');
@@ -37,7 +40,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     setCouponError('');
-    if (!inputCoupon) return;
+    if (!inputCoupon.trim()) {
+      setCouponError('Enter a coupon code to apply.');
+      return;
+    }
     const res = applyCoupon(inputCoupon);
     if (!res.success) {
       setCouponError(res.message);
@@ -49,21 +55,31 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
   return (
     <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
         className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
         onClick={() => setIsCartDrawerOpen(false)}
+        aria-label="Close cart"
       />
 
-      <div className="relative w-full max-w-md bg-[#FAF7F2] h-full shadow-2xl flex flex-col z-10">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cart-dialog-title"
+        tabIndex={-1}
+        className="relative w-full max-w-md bg-[#FAF7F2] h-full shadow-2xl flex flex-col z-10"
+      >
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-[#EADBCE] flex items-center justify-between bg-[#F4EFEA]">
           <div className="flex items-center gap-2">
-            <h2 className="font-serif text-xl font-medium text-[#2A0814] tabular-nums">Your Shopping Bag</h2>
+            <h2 id="cart-dialog-title" className="font-serif text-xl font-medium text-[#2A0814]">Your Shopping Bag</h2>
             <span className="text-xs font-mono text-[#4A1525]/70 tabular-nums">
               ({cartCount} {cartCount === 1 ? 'piece' : 'pieces'})
             </span>
           </div>
           <button
+            type="button"
             onClick={() => setIsCartDrawerOpen(false)}
             aria-label="Close cart"
             className="p-1.5 text-[#2A0814] hover:text-[#C49A45] rounded-full hover:bg-[#EADBCE]/50 transition-colors cursor-pointer"
@@ -77,13 +93,20 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
           {amountNeededForFreeShipping > 0 ? (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span>Add <strong><span className="tabular-nums">₹{amountNeededForFreeShipping.toLocaleString('en-IN')}</span></strong> for Free Express Delivery</span>
+                <span>Add <strong>₹{amountNeededForFreeShipping.toLocaleString('en-IN')}</strong> for Free Express Delivery</span>
                 <span className="text-[#C49A45] font-mono tabular-nums">{Math.round(shippingProgress)}%</span>
               </div>
-              <div className="w-full bg-[#1B060D] h-1.5 rounded-full overflow-hidden">
+              <div
+                className="w-full bg-[#1B060D] h-1.5 rounded-full overflow-hidden"
+                role="progressbar"
+                aria-label="Progress toward free express delivery"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(shippingProgress)}
+              >
                 <div
-                  className="bg-[#C49A45] h-full transition-all duration-300"
-                  style={{ width: `${shippingProgress}%` }}
+                  className="bg-[#C49A45] h-full origin-left transition-transform duration-300"
+                  style={{ transform: `scaleX(${shippingProgress / 100})` }}
                 />
               </div>
             </div>
@@ -118,24 +141,31 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
                 <img
                   src={product.images[0]}
                   alt={product.name}
+                  width={80}
+                  height={80}
+                  loading="lazy"
                   referrerPolicy="no-referrer"
                   className="w-20 h-20 object-cover rounded-xs border border-[#EADBCE] shrink-0 bg-[#F4EFEA]"
                 />
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <div className="flex items-start justify-between gap-2">
-                      <h4
-                        onClick={() => {
+                      <a
+                        href={`/product/${product.slug}`}
+                        onClick={(event) => {
+                          if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                          event.preventDefault();
                           setIsCartDrawerOpen(false);
                           navigateTo('product-detail', product.slug);
                         }}
-                        className="min-w-0 flex-1 break-words text-xs font-serif font-medium text-[#2A0814] hover:text-[#C49A45] cursor-pointer"
+                        className="min-w-0 flex-1 break-words text-xs font-serif font-medium text-[#2A0814] hover:text-[#C49A45]"
                       >
                         {product.name}
-                      </h4>
+                      </a>
                       <button
+                        type="button"
                         onClick={() => removeFromCart(product.id)}
-                        aria-label="Remove item"
+                        aria-label={`Remove ${product.name} from shopping bag`}
                         className="shrink-0 p-1 text-[#4A1525]/40 transition-colors hover:text-red-700 cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -150,9 +180,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
                     {/* Quantity Stepper */}
                     <div className="flex items-center border border-[#EADBCE] bg-[#FAF7F2] rounded-xs">
                       <button
+                        type="button"
                         onClick={() => updateQuantity(product.id, quantity - 1)}
                         className="p-1 hover:bg-[#F4EFEA] text-[#2A0814] transition-colors cursor-pointer"
-                        aria-label="Decrease quantity"
+                        aria-label={`Decrease quantity of ${product.name}`}
                       >
                         <Minus className="w-3 h-3" />
                       </button>
@@ -160,9 +191,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
                         {quantity}
                       </span>
                       <button
+                        type="button"
                         onClick={() => updateQuantity(product.id, quantity + 1)}
                         className="p-1 hover:bg-[#F4EFEA] text-[#2A0814] transition-colors cursor-pointer"
-                        aria-label="Increase quantity"
+                        aria-label={`Increase quantity of ${product.name}`}
                       >
                         <Plus className="w-3 h-3" />
                       </button>
@@ -170,7 +202,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
 
                     <div className="text-right font-mono tabular-nums">
                       <span className="text-xs font-semibold text-[#2A0814]">
-                        <span className="tabular-nums">₹{(product.price * quantity).toLocaleString('en-IN')}</span>
+                        ₹{(product.price * quantity).toLocaleString('en-IN')}
                       </span>
                     </div>
                   </div>
@@ -192,8 +224,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
                     <span>Coupon <strong>{couponCode}</strong> applied</span>
                   </div>
                   <button
+                    type="button"
                     onClick={removeCoupon}
-                    className="text-xs text-red-700 hover:underline cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+                    className="text-xs text-red-700 hover:underline cursor-pointer touch-manipulation"
                   >
                     Remove
                   </button>
@@ -201,22 +234,28 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
               ) : (
                 <form onSubmit={handleApplyCoupon} className="flex gap-2">
                   <input
+                    name="coupon"
                     type="text"
+                    autoComplete="off"
+                    spellCheck={false}
                     value={inputCoupon}
                     onChange={(e) => setInputCoupon(e.target.value)}
-                    placeholder="Coupon (e.g. ROYAL10)"
+                    aria-label="Coupon code"
+                    aria-invalid={!!couponError}
+                    aria-describedby={couponError ? 'cart-coupon-error' : undefined}
+                    placeholder="Coupon (e.g. ROYAL10)…"
                     className="flex-1 bg-[#FAF7F2] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] placeholder-[#4A1525]/40 rounded-xs uppercase focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                   />
                   <button
                     type="submit"
-                    className="py-1.5 px-3 bg-[#2A0814] text-[#FAF7F2] text-xs font-medium rounded-xs hover:bg-[#380E1C] cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+                    className="py-1.5 px-3 bg-[#2A0814] text-[#FAF7F2] text-xs font-medium rounded-xs hover:bg-[#380E1C] cursor-pointer touch-manipulation"
                   >
                     Apply
                   </button>
                 </form>
               )}
               {couponError && (
-                <p className="text-[11px] text-red-600 mt-1">{couponError}</p>
+                <p id="cart-coupon-error" className="text-[11px] text-red-600 mt-1" aria-live="polite">{couponError}</p>
               )}
             </div>
 
@@ -224,12 +263,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
             <div className="space-y-1.5 text-xs text-[#4A1525]/80 font-mono">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="tabular-nums"><span className="tabular-nums">₹{subtotal.toLocaleString('en-IN')}</span></span>
+                <span className="tabular-nums">₹{subtotal.toLocaleString('en-IN')}</span>
               </div>
               {discountAmount > 0 && (
                 <div className="flex justify-between text-emerald-800">
                   <span>Royal Privilege Discount</span>
-                  <span className="tabular-nums">-<span className="tabular-nums">₹{discountAmount.toLocaleString('en-IN')}</span></span>
+                  <span className="tabular-nums">-₹{discountAmount.toLocaleString('en-IN')}</span>
                 </div>
               )}
               <div className="flex justify-between">
@@ -241,7 +280,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
               <div className="flex justify-between text-sm font-semibold text-[#2A0814] pt-2 border-t border-[#EADBCE]">
                 <span>Total Amount</span>
                 <span className="tabular-nums font-mono text-base">
-                  <span className="tabular-nums">₹{finalTotal.toLocaleString('en-IN')}</span>
+                  ₹{finalTotal.toLocaleString('en-IN')}
                 </span>
               </div>
             </div>
@@ -249,25 +288,27 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout }) => {
             {/* CTAs */}
             <div className="pt-2 space-y-2">
               <button
+                type="button"
                 onClick={() => {
                   setIsCartDrawerOpen(false);
                   onOpenCheckout();
                 }}
-                className="w-full py-3 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xs bg-[#2A0814] py-3 text-xs font-semibold uppercase tracking-widest text-[#FAF7F2] shadow-sm transition-[background-color,box-shadow] hover:bg-[#380E1C]"
               >
                 <span>Proceed to Secure Checkout</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
-              <button
-                onClick={() => {
+              <a
+                href="/cart"
+                onClick={(event) => handleInternalLinkClick(event, () => {
                   setIsCartDrawerOpen(false);
                   navigateTo('cart');
-                }}
-                className="w-full py-2 bg-transparent text-[#2A0814] hover:text-[#C49A45] text-xs font-medium text-center transition-colors cursor-pointer"
+                })}
+                className="inline-flex min-h-11 w-full cursor-pointer items-center justify-center bg-transparent py-2 text-center text-xs font-medium text-[#2A0814] transition-colors hover:text-[#C49A45]"
               >
                 View Detailed Cart Page
-              </button>
+              </a>
             </div>
           </div>
         )}

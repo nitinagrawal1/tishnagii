@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { DecodedIdToken } from 'firebase-admin/auth';
 import {
   getOrderSummary,
   getRazorpayClient,
@@ -12,6 +13,21 @@ const handler = async (request: VercelRequest, response: VercelResponse) => {
   if (request.method !== 'POST') {
     response.setHeader('Allow', 'POST');
     return response.status(405).json({ error: 'Method not allowed.' });
+  }
+
+  const authorization = request.headers.authorization;
+  const idToken = typeof authorization === 'string' && authorization.startsWith('Bearer ')
+    ? authorization.slice(7)
+    : '';
+  if (!idToken) return response.status(401).json({ error: 'Sign in to complete your payment.' });
+  if (!isFirebaseAdminConfigured()) {
+    return response.status(503).json({ error: 'Authenticated checkout is not configured. Set FIREBASE_SERVICE_ACCOUNT_JSON on the server.' });
+  }
+  let identity: DecodedIdToken;
+  try {
+    identity = await getAdminAuth().verifyIdToken(idToken);
+  } catch {
+    return response.status(401).json({ error: 'Your session expired. Sign in again to complete this order.' });
   }
 
   try {
@@ -38,59 +54,50 @@ const handler = async (request: VercelRequest, response: VercelResponse) => {
       payment.order_id !== order.id ||
       payment.amount !== order.amount ||
       payment.currency !== order.currency ||
+      order.notes?.customer_uid !== identity.uid ||
       !['captured', 'authorized'].includes(payment.status)
     ) {
-      return response.status(400).json({ error: 'Payment details do not match the verified order.' });
+      return response.status(400).json({ error: 'Payment details do not match your signed-in order.' });
     }
 
     let historySaved = false;
     let historyMessage: string | undefined;
-    const authorization = request.headers.authorization;
-    const idToken = typeof authorization === 'string' && authorization.startsWith('Bearer ')
-      ? authorization.slice(7)
-      : '';
-
-    if (idToken) {
-      if (!isFirebaseAdminConfigured()) {
-        historyMessage = 'Payment verified, but order history is not configured. Set FIREBASE_SERVICE_ACCOUNT_JSON on the server.';
-      } else {
-      try {
-        const identity = await getAdminAuth().verifyIdToken(idToken);
-        if (order.notes?.customer_uid !== identity.uid) {
-          throw new Error('This Razorpay order is not linked to the signed-in account.');
-        }
-        const customer = body.customer as OrderCustomer;
-        if (!customer || typeof customer.fullName !== 'string' || typeof customer.address !== 'string') {
-          throw new Error('Customer details are missing from the order.');
-        }
-        await saveAccountOrder(identity.uid, {
-          orderId: order.id,
-          paymentId: payment.id,
-          paymentMethod: payment.method,
-          paymentStatus: payment.status,
-          status: payment.status === 'captured' ? 'confirmed' : 'payment_authorized',
-          amount: bodyCart.amount,
-          amountPaise: bodyCart.amountPaise,
-          currency: order.currency,
-          subtotal: bodyCart.subtotal,
-          discount: bodyCart.discount,
-          tax: bodyCart.tax,
-          shipping: bodyCart.shipping,
-          paymentMethodDetails: payment.method === 'card' ? payment.card?.network : undefined,
-          items: bodyCart.items,
-          customer: {
-            fullName: customer.fullName.slice(0, 120),
-            email: identity.email || '',
-            phone: customer.phone.slice(0, 30),
-            address: customer.address.slice(0, 500),
-          },
-        });
-        historySaved = true;
-      } catch (error) {
-        console.error('Verified payment could not be added to account history:', error);
-        historyMessage = 'Payment was verified, but order history could not be synchronized.';
+    try {
+      const customer = body.customer as OrderCustomer;
+      if (
+        !customer ||
+        typeof customer.fullName !== 'string' ||
+        typeof customer.phone !== 'string' ||
+        typeof customer.address !== 'string'
+      ) {
+        throw new Error('Customer details are missing from the order.');
       }
-      }
+      await saveAccountOrder(identity.uid, {
+        orderId: order.id,
+        paymentId: payment.id,
+        paymentMethod: payment.method,
+        paymentStatus: payment.status,
+        status: payment.status === 'captured' ? 'confirmed' : 'payment_authorized',
+        amount: bodyCart.amount,
+        amountPaise: bodyCart.amountPaise,
+        currency: order.currency,
+        subtotal: bodyCart.subtotal,
+        discount: bodyCart.discount,
+        tax: bodyCart.tax,
+        shipping: bodyCart.shipping,
+        paymentMethodDetails: payment.method === 'card' ? payment.card?.network : undefined,
+        items: bodyCart.items,
+        customer: {
+          fullName: customer.fullName.slice(0, 120),
+          email: identity.email || '',
+          phone: customer.phone.slice(0, 30),
+          address: customer.address.slice(0, 500),
+        },
+      });
+      historySaved = true;
+    } catch (error) {
+      console.error('Verified payment could not be added to account history:', error);
+      historyMessage = 'Payment was verified, but order history could not be synchronized.';
     }
 
     return response.status(200).json({

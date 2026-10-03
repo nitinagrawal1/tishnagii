@@ -12,21 +12,22 @@ const handler = async (request: VercelRequest, response: VercelResponse) => {
   const idToken = typeof authorization === 'string' && authorization.startsWith('Bearer ')
     ? authorization.slice(7)
     : '';
-  let customerUid: string | undefined;
-  if (idToken) {
-    if (!isFirebaseAdminConfigured()) {
-      return response.status(503).json({ error: 'Authenticated checkout is not configured. Set FIREBASE_SERVICE_ACCOUNT_JSON on the server.' });
+  if (!idToken) {
+    return response.status(401).json({ error: 'Sign in or create an account before placing an order.' });
+  }
+  if (!isFirebaseAdminConfigured()) {
+    return response.status(503).json({ error: 'Authenticated checkout is not configured. Set FIREBASE_SERVICE_ACCOUNT_JSON on the server.' });
+  }
+  let customerUid: string;
+  try {
+    customerUid = (await getAdminAuth().verifyIdToken(idToken)).uid;
+  } catch (error) {
+    const code = typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : '';
+    if (code.startsWith('auth/')) {
+      return response.status(401).json({ error: 'Your sign-in session expired. Please sign in again.' });
     }
-    try {
-      customerUid = (await getAdminAuth().verifyIdToken(idToken)).uid;
-    } catch (error) {
-      const code = typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : '';
-      if (code.startsWith('auth/')) {
-        return response.status(401).json({ error: 'Your sign-in session expired. Please sign in again.' });
-      }
-      console.error('Unable to verify customer for Razorpay order:', error);
-      return response.status(500).json({ error: 'Unable to prepare your account order. Please try again.' });
-    }
+    console.error('Unable to verify customer for Razorpay order:', error);
+    return response.status(500).json({ error: 'Unable to prepare your account order. Please try again.' });
   }
 
   try {

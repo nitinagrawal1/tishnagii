@@ -27,7 +27,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({ page, product, post, categoryN
         'Browse our distinctive categories: Necklaces & Chokers, Earrings & Jhumkas, Bangles & Kadas, Maang Tikka & Passa, and Royal Bridal Suites.';
     } else if (page === 'product-detail' && product) {
       title = `${product.name} | TISHNAGII`;
-      description = product.description.substring(0, 155) + '...';
+      description = product.description.substring(0, 155) + '…';
       schemaJson = {
         '@context': 'https://schema.org/',
         '@type': 'Product',

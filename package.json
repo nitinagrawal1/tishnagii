@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "npm@11.12.1",
   "scripts": {
     "dev": "tsx server/dev.ts",
     "build": "vite build",
@@ -16,6 +17,7 @@
     "@firebase/firestore": "^4.17.2",
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/react-virtual": "^3.14.13",
     "@vitejs/plugin-react": "^6.1.1",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
@@ -39,5 +41,15 @@
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
     "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "@firebase/firestore": {
+      "@grpc/grpc-js": "1.13.6"
+    },
+    "@google-cloud/storage": {
+      "gaxios": {
+        "uuid": "11.1.1"
+      }
+    }
   }
 }

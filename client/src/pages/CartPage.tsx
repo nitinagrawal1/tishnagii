@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
 import { Trash2, Plus, Minus, ArrowRight, ShieldCheck, Tag, ShoppingBag, Truck } from 'lucide-react';
 import { EmptyState } from '../components/common/EmptyState';
+import { handleInternalLinkClick } from '../utils/navigation';
 
 interface CartPageProps {
   onOpenCheckout: () => void;
@@ -33,7 +34,10 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
     setCouponError('');
-    if (!inputCoupon) return;
+    if (!inputCoupon.trim()) {
+      setCouponError('Enter a coupon code to apply.');
+      return;
+    }
     const res = applyCoupon(inputCoupon);
     if (!res.success) setCouponError(res.message);
     else setInputCoupon('');
@@ -72,10 +76,17 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
               <span>Add <strong><span className="tabular-nums">₹{amountNeeded.toLocaleString('en-IN')}</span></strong> more for Free Pan-India Express Delivery</span>
               <span className="text-[#C49A45] font-mono tabular-nums">{Math.round(progressPercent)}%</span>
             </div>
-            <div className="w-full bg-[#1B060D] h-1.5 rounded-full overflow-hidden">
+            <div
+              className="w-full bg-[#1B060D] h-1.5 rounded-full overflow-hidden"
+              role="progressbar"
+              aria-label="Progress toward free express delivery"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(progressPercent)}
+            >
               <div
-                className="bg-[#C49A45] h-full transition-all duration-300"
-                style={{ width: `${progressPercent}%` }}
+                className="bg-[#C49A45] h-full origin-left transition-transform duration-300"
+                style={{ transform: `scaleX(${progressPercent / 100})` }}
               />
             </div>
           </div>
@@ -98,18 +109,23 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
                   <img
                     src={product.images[0]}
                     alt={product.name}
+                    width={96}
+                    height={96}
                     referrerPolicy="no-referrer"
+                    loading="lazy"
                     className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xs border border-[#EADBCE] shrink-0 bg-[#F4EFEA]"
                   />
                   <div className="min-w-0 space-y-1">
                     <span className="text-[10px] uppercase tracking-wider text-[#C49A45] font-semibold">
                       {product.categoryLabel}
                     </span>
-                    <h3
-                      onClick={() => navigateTo('product-detail', product.slug)}
-                      className="break-words font-serif text-base sm:text-lg font-medium text-[#2A0814] hover:text-[#4A1525] cursor-pointer"
-                    >
-                      {product.name}
+                    <h3 className="break-words font-serif text-base font-medium text-[#2A0814] hover:text-[#4A1525] sm:text-lg">
+                      <a
+                        href={`/product/${product.slug}`}
+                        onClick={(event) => handleInternalLinkClick(event, () => navigateTo('product-detail', product.slug))}
+                      >
+                        {product.name}
+                      </a>
                     </h3>
                     <p className="text-xs text-[#4A1525]/60 font-mono tabular-nums">
                       <span className="tabular-nums">₹{product.price.toLocaleString('en-IN')}</span> each
@@ -121,9 +137,10 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
                   {/* Quantity Stepper */}
                   <div className="flex items-center border border-[#EADBCE] bg-[#FAF7F2] rounded-xs h-9">
                     <button
+                      type="button"
                       onClick={() => updateQuantity(product.id, quantity - 1)}
                       className="px-2.5 text-[#2A0814] hover:bg-[#F4EFEA] h-full transition-colors cursor-pointer"
-                      aria-label="Decrease quantity"
+                      aria-label={`Decrease quantity of ${product.name}`}
                     >
                       <Minus className="w-3 h-3" />
                     </button>
@@ -131,9 +148,10 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
                       {quantity}
                     </span>
                     <button
+                      type="button"
                       onClick={() => updateQuantity(product.id, quantity + 1)}
                       className="px-2.5 text-[#2A0814] hover:bg-[#F4EFEA] h-full transition-colors cursor-pointer"
-                      aria-label="Increase quantity"
+                      aria-label={`Increase quantity of ${product.name}`}
                     >
                       <Plus className="w-3 h-3" />
                     </button>
@@ -148,8 +166,9 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
 
                   {/* Remove Button */}
                   <button
+                    type="button"
                     onClick={() => removeFromCart(product.id)}
-                    aria-label="Remove item"
+                    aria-label={`Remove ${product.name} from shopping bag`}
                     className="text-[#4A1525]/40 hover:text-red-700 p-1.5 transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -160,12 +179,13 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
           </div>
 
           <div className="flex justify-between items-center text-xs">
-            <button
-              onClick={() => navigateTo('shop')}
-              className="text-[#2A0814] hover:text-[#C49A45] font-semibold underline cursor-pointer"
+            <a
+              href="/shop"
+              onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop'))}
+              className="inline-flex min-h-11 items-center text-[#2A0814] font-semibold underline hover:text-[#A77E2C]"
             >
               ← Continue Curating Jewellery
-            </button>
+            </a>
           </div>
         </div>
 
@@ -195,9 +215,13 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
                 <div className="flex gap-2">
                   <input
                     type="text"
+                    name="coupon"
+                    autoComplete="off"
+                    spellCheck={false}
+                    aria-label="Coupon code"
                     value={inputCoupon}
                     onChange={(e) => setInputCoupon(e.target.value)}
-                    placeholder="Coupon (e.g. ROYAL10)"
+                    placeholder="Coupon (e.g. ROYAL10)…"
                     className="flex-1 bg-[#FAF7F2] border border-[#EADBCE] px-3 py-2 text-xs text-[#2A0814] uppercase rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                   />
                   <button
@@ -245,7 +269,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onOpenCheckout }) => {
           <div className="space-y-3">
             <button
               onClick={onOpenCheckout}
-              className="w-full py-3.5 bg-[#2A0814] hover:bg-[#380E1C] text-[#FAF7F2] text-xs uppercase tracking-widest font-semibold rounded-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+              className="flex min-h-11 min-w-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xs bg-[#2A0814] py-3.5 text-xs font-semibold uppercase tracking-widest text-[#FAF7F2] shadow-md transition-[background-color,box-shadow] hover:bg-[#380E1C] touch-manipulation"
             >
               <span>Proceed to Checkout</span>
               <ArrowRight className="w-4 h-4" />

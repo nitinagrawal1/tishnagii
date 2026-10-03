@@ -8,9 +8,12 @@ export const ShopPage: React.FC = () => {
   const { currentCategorySlug, navigateTo } = useShop();
 
   // Filter States
-  const [selectedCategory, setSelectedCategory] = useState<string>(
-    currentCategorySlug || 'all'
-  );
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).get('category') || currentCategorySlug || 'all';
+    }
+    return currentCategorySlug || 'all';
+  });
   const [sortBy, setSortBy] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -25,26 +28,53 @@ export const ShopPage: React.FC = () => {
     }
     return false;
   });
-  const [searchFilter, setSearchFilter] = useState<string>('');
+  const [searchFilter, setSearchFilter] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).get('q') || '';
+    }
+    return '';
+  });
 
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
     const url = new URL(window.location.href);
+    if (selectedCategory !== 'all') url.searchParams.set('category', selectedCategory);
+    else url.searchParams.delete('category');
     if (sortBy !== 'featured') url.searchParams.set('sort', sortBy);
     else url.searchParams.delete('sort');
-    
+
     if (inStockOnly) url.searchParams.set('inStock', 'true');
     else url.searchParams.delete('inStock');
-    
-    window.history.replaceState({}, '', url);
-  }, [sortBy, inStockOnly]);
+    if (searchFilter.trim()) url.searchParams.set('q', searchFilter);
+    else url.searchParams.delete('q');
+
+    window.history.replaceState(window.history.state, '', url);
+  }, [selectedCategory, sortBy, inStockOnly, searchFilter]);
 
   // Handle category change if passed from props or state
   React.useEffect(() => {
-    if (currentCategorySlug) {
-      setSelectedCategory(currentCategorySlug);
-    }
+    setSelectedCategory(currentCategorySlug || 'all');
   }, [currentCategorySlug]);
+
+  React.useEffect(() => {
+    const restoreFiltersFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      const category = params.get('category');
+      const sort = params.get('sort');
+      setSelectedCategory(
+        category && CATEGORIES.some((item) => item.id === category) ? category : 'all',
+      );
+      setSortBy(
+        sort && ['price-low', 'price-high', 'rating', 'newest'].includes(sort)
+          ? sort
+          : 'featured',
+      );
+      setInStockOnly(params.get('inStock') === 'true');
+      setSearchFilter(params.get('q') || '');
+    };
+    window.addEventListener('popstate', restoreFiltersFromUrl);
+    return () => window.removeEventListener('popstate', restoreFiltersFromUrl);
+  }, []);
 
   // Filtering Logic
   const filteredProducts = useMemo(() => {
@@ -105,10 +135,12 @@ export const ShopPage: React.FC = () => {
       </div>
 
       {/* Interactive Category Segmented Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-[#EADBCE]">
+      <div className="shop-collection-filters flex w-full min-w-0 snap-x snap-mandatory items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 scrollbar-none border-b border-[#EADBCE]" role="group" aria-label="Filter by collection">
         <button
+          type="button"
           onClick={() => setSelectedCategory('all')}
-          className={`px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-xs transition-colors whitespace-nowrap cursor-pointer ${
+          aria-pressed={selectedCategory === 'all'}
+          className={`min-h-11 shrink-0 snap-start px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-xs transition-colors whitespace-nowrap cursor-pointer ${
             selectedCategory === 'all'
               ? 'bg-[#2A0814] text-[#FAF7F2]'
               : 'bg-[#F4EFEA] text-[#2A0814] hover:bg-[#EADBCE]'
@@ -118,9 +150,11 @@ export const ShopPage: React.FC = () => {
         </button>
         {CATEGORIES.map((cat) => (
           <button
+            type="button"
             key={cat.id}
             onClick={() => setSelectedCategory(cat.id)}
-            className={`px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-xs transition-colors whitespace-nowrap cursor-pointer ${
+            aria-pressed={selectedCategory === cat.id}
+            className={`min-h-11 shrink-0 snap-start px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-xs transition-colors whitespace-nowrap cursor-pointer ${
               selectedCategory === cat.id
                 ? 'bg-[#2A0814] text-[#FAF7F2]'
                 : 'bg-[#F4EFEA] text-[#2A0814] hover:bg-[#EADBCE]'
@@ -137,17 +171,22 @@ export const ShopPage: React.FC = () => {
         {/* Search Refinement */}
         <div className="relative flex-1 max-w-sm">
           <Search className="w-4 h-4 text-[#4A1525]/50 absolute left-3 top-2.5" />
+          <label htmlFor="shop-search" className="sr-only">Search products in this collection</label>
           <input
+            id="shop-search"
+            name="q"
             type="text"
+            autoComplete="off"
+            spellCheck={false}
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
-            placeholder="Search within this collection..."
-            className="w-full bg-[#F4EFEA] border border-[#EADBCE] pl-9 pr-3 py-1.5 text-xs text-[#2A0814] placeholder-[#4A1525]/40 rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
+            placeholder="Search this collection, e.g. kundan…"
+            className="min-h-11 w-full bg-[#F4EFEA] border border-[#EADBCE] pl-9 pr-12 py-1.5 text-xs text-[#2A0814] placeholder-[#4A1525]/40 rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
           />
           {searchFilter && (
             <button
               onClick={() => setSearchFilter('')}
-              className="absolute right-2.5 top-2 text-[10px] text-[#4A1525]/60 hover:text-[#2A0814]"
+              className="absolute right-1 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-[10px] text-[#4A1525]/60 hover:text-[#2A0814]"
             >
               Clear
             </button>
@@ -160,9 +199,11 @@ export const ShopPage: React.FC = () => {
           <div className="flex items-center gap-1.5 text-xs text-[#2A0814]">
             <span className="text-[#4A1525]/60 hidden sm:inline">Sort:</span>
             <select
+              name="sort"
+              aria-label="Sort products"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-[#F4EFEA] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] cursor-pointer"
+              className="min-h-11 bg-[#F4EFEA] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] cursor-pointer"
             >
               <option value="featured">Featured Suites</option>
               <option value="price-low">Price: Low to High</option>
@@ -173,8 +214,9 @@ export const ShopPage: React.FC = () => {
           </div>
 
           {/* In Stock Only Checkbox */}
-          <label className="flex items-center gap-1.5 text-xs text-[#2A0814] cursor-pointer select-none">
+          <label className="flex min-h-11 items-center gap-1.5 text-xs text-[#2A0814] cursor-pointer select-none">
             <input
+              name="inStock"
               type="checkbox"
               checked={inStockOnly}
               onChange={(e) => setInStockOnly(e.target.checked)}
@@ -197,7 +239,7 @@ export const ShopPage: React.FC = () => {
       </div>
 
       {/* Active Count & Feedback */}
-      <div className="flex flex-col gap-1 text-xs text-[#4A1525]/70 font-mono sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <div aria-live="polite" className="flex flex-col gap-1 text-xs text-[#4A1525]/70 font-mono sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <span className="min-w-0">
           Showing <strong className="text-[#2A0814]">{filteredProducts.length}</strong> handcrafted pieces
         </span>
@@ -209,8 +251,8 @@ export const ShopPage: React.FC = () => {
       {/* Product Grid (3-4 columns balanced) */}
       {filteredProducts.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {filteredProducts.map((product, index) => (
+            <ProductCard key={product.id} product={product} priority={index < 4} />
           ))}
         </div>
       ) : (
@@ -238,4 +280,3 @@ export const ShopPage: React.FC = () => {
     </div>
   );
 };
-

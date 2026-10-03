@@ -15,11 +15,17 @@
   --color-gold-400: #d4ae58;
   --color-gold-500: #c49a45;
   --color-gold-600: #a77e2c;
+  --color-gold-readable: #6a4d1d;
+  --color-gold-readable-light: #f7efcf;
   --color-emerald-900: #12281e;
   --color-emerald-800: #1a4333;
 }
 
 @layer base {
+  html {
+    color-scheme: light;
+  }
+
   body {
     background-color: var(--color-ivory-50);
     color: #1c1819;
@@ -28,6 +34,231 @@
   
   h1, h2, h3, h4, .font-serif-brand {
     font-family: var(--font-serif);
+  }
+}
+
+body [class~="text-[#C49A45]"],
+body [class~="text-[#D4AE58]"],
+body [class~="text-[#A77E2C]"],
+body [class~="text-gold-500"],
+body [class~="hover:text-[#C49A45]"]:hover,
+body [class~="hover:text-[#D4AE58]"]:hover,
+body [class~="hover:text-[#A77E2C]"]:hover,
+body [class~="hover:text-gold-500"]:hover,
+body .group:hover [class~="group-hover:text-[#C49A45]"],
+body .group:hover [class~="group-hover:text-[#D4AE58]"] {
+  color: var(--color-gold-readable);
+}
+
+body [class~="text-[#4A1525]/40"],
+body [class~="text-[#4A1525]/50"],
+body [class~="text-[#4A1525]/60"],
+body [class~="text-[#4A1525]/65"],
+body [class~="text-[#4A1525]/70"],
+body [class~="text-[#4A1525]/75"],
+body [class~="text-[#4A1525]/80"],
+body [class~="text-[#4A1525]/85"] {
+  color: #63451a;
+}
+
+body :is(
+  [class~="bg-[#181517]"],
+  [class~="bg-[#1A1416]"],
+  [class~="bg-[#1B060D]"],
+  [class~="bg-[#230611]"],
+  [class~="bg-[#230711]"],
+  [class~="bg-[#2A0814]"],
+  [class~="bg-[#2A0814]/80"],
+  [class~="bg-[#2A0814]/90"],
+  [class~="bg-[#2D0B17]"],
+  [class~="bg-[#2F0B18]"],
+  [class~="bg-[#380E1C]"],
+  [class~="bg-[#380E1C]/20"],
+  [class~="bg-[#380E1C]/40"],
+  [class~="bg-[#4A1525]"]
+) :is(
+  [class~="text-[#C49A45]"],
+  [class~="text-[#D4AE58]"],
+  [class~="hover:text-[#C49A45]"]:hover,
+  [class~="hover:text-[#D4AE58]"]:hover,
+  [class~="group-hover:text-[#C49A45]"],
+  [class~="group-hover:text-[#D4AE58]"]
+),
+body :is(
+  [class~="bg-[#181517]"],
+  [class~="bg-[#1A1416]"],
+  [class~="bg-[#1B060D]"],
+  [class~="bg-[#230611]"],
+  [class~="bg-[#230711]"],
+  [class~="bg-[#2A0814]"],
+  [class~="bg-[#2A0814]/80"],
+  [class~="bg-[#2A0814]/90"],
+  [class~="bg-[#2D0B17]"],
+  [class~="bg-[#2F0B18]"],
+  [class~="bg-[#380E1C]"],
+  [class~="bg-[#380E1C]/20"],
+  [class~="bg-[#380E1C]/40"],
+  [class~="bg-[#4A1525]"]
+) :is(
+  [class~="text-[#C49A45]"],
+  [class~="text-[#D4AE58]"]
+) {
+  color: var(--color-gold-readable-light);
+}
+
+body :is(
+  [class~="bg-[#181517]"],
+  [class~="bg-[#1A1416]"],
+  [class~="bg-[#1B060D]"],
+  [class~="bg-[#230611]"],
+  [class~="bg-[#230711]"],
+  [class~="bg-[#2A0814]"],
+  [class~="bg-[#2A0814]/80"],
+  [class~="bg-[#2A0814]/90"],
+  [class~="bg-[#2D0B17]"],
+  [class~="bg-[#2F0B18]"],
+  [class~="bg-[#380E1C]"],
+  [class~="bg-[#380E1C]/20"],
+  [class~="bg-[#380E1C]/40"],
+  [class~="bg-[#4A1525]"]
+) .group:hover :is(
+  [class~="group-hover:text-[#C49A45]"],
+  [class~="group-hover:text-[#D4AE58]"]
+),
+body :is(
+  [class~="bg-[#181517]"][class~="text-[#C49A45]"],
+  [class~="bg-[#181517]"][class~="text-[#D4AE58]"],
+  [class~="bg-[#1A1416]"][class~="text-[#C49A45]"],
+  [class~="bg-[#1A1416]"][class~="text-[#D4AE58]"],
+  [class~="bg-[#1B060D]"][class~="text-[#C49A45]"],
+  [class~="bg-[#1B060D]"][class~="text-[#D4AE58]"],
+  [class~="bg-[#230611]"][class~="text-[#C49A45]"],
+  [class~="bg-[#230611]"][class~="text-[#D4AE58]"],
+  [class~="bg-[#230711]"][class~="text-[#C49A45]"],
+  [class~="bg-[#230711]"][class~="text-[#D4AE58]"],
+  [class~="bg-[#2A0814]"][class~="text-[#C49A45]"],
+  [class~="bg-[#2A0814]"][class~="text-[#D4AE58]"],
+  [class~="bg-[#2D0B17]"][class~="text-[#C49A45]"],
+  [class~="bg-[#2D0B17]"][class~="text-[#D4AE58]"],
+  [class~="bg-[#2F0B18]"][class~="text-[#C49A45]"],
+  [class~="bg-[#2F0B18]"][class~="text-[#D4AE58]"],
+  [class~="bg-[#380E1C]"][class~="text-[#C49A45]"],
+  [class~="bg-[#380E1C]"][class~="text-[#D4AE58]"],
+  [class~="bg-[#4A1525]"][class~="text-[#C49A45]"],
+  [class~="bg-[#4A1525]"][class~="text-[#D4AE58]"]
+) {
+  color: var(--color-gold-readable-light);
+}
+
+body :is(
+  [class~="bg-[#181517]"],
+  [class~="bg-[#1A1416]"],
+  [class~="bg-[#1B060D]"],
+  [class~="bg-[#230611]"],
+  [class~="bg-[#230711]"],
+  [class~="bg-[#2A0814]"],
+  [class~="bg-[#2A0814]/80"],
+  [class~="bg-[#2A0814]/90"],
+  [class~="bg-[#2D0B17]"],
+  [class~="bg-[#2F0B18]"],
+  [class~="bg-[#380E1C]"],
+  [class~="bg-[#380E1C]/20"],
+  [class~="bg-[#380E1C]/40"],
+  [class~="bg-[#4A1525]"]
+):is(
+  [class~="text-[#C49A45]"],
+  [class~="text-[#D4AE58]"]
+) {
+  color: var(--color-gold-readable-light);
+}
+body :is(
+  [class~="bg-[#181517]"],
+  [class~="bg-[#1A1416]"],
+  [class~="bg-[#1B060D]"],
+  [class~="bg-[#230611]"],
+  [class~="bg-[#230711]"],
+  [class~="bg-[#2A0814]"],
+  [class~="bg-[#2A0814]/80"],
+  [class~="bg-[#2A0814]/90"],
+  [class~="bg-[#2D0B17]"],
+  [class~="bg-[#2F0B18]"],
+  [class~="bg-[#380E1C]"],
+  [class~="bg-[#380E1C]/20"],
+  [class~="bg-[#380E1C]/40"],
+  [class~="bg-[#4A1525]"]
+) :is(
+  [class~="text-[#FAF7F2]/50"],
+  [class~="text-[#FAF7F2]/60"],
+  [class~="text-[#FAF7F2]/70"],
+  [class~="text-[#FAF7F2]/75"],
+  [class~="text-[#FAF7F2]/80"],
+  [class~="text-[#FAF7F2]/85"],
+  [class~="text-[#FAF7F2]/90"]
+) {
+  color: #faf7f2;
+}
+
+body :is(
+  [class~="bg-[#181517]"],
+  [class~="bg-[#1A1416]"],
+  [class~="bg-[#1B060D]"],
+  [class~="bg-[#230611]"],
+  [class~="bg-[#230711]"],
+  [class~="bg-[#2A0814]"],
+  [class~="bg-[#2A0814]/80"],
+  [class~="bg-[#2A0814]/90"],
+  [class~="bg-[#2D0B17]"],
+  [class~="bg-[#2F0B18]"],
+  [class~="bg-[#380E1C]"],
+  [class~="bg-[#380E1C]/20"],
+  [class~="bg-[#380E1C]/40"],
+  [class~="bg-[#4A1525]"]
+):is(
+  [class~="text-[#FAF7F2]/50"],
+  [class~="text-[#FAF7F2]/60"],
+  [class~="text-[#FAF7F2]/70"],
+  [class~="text-[#FAF7F2]/75"],
+  [class~="text-[#FAF7F2]/80"],
+  [class~="text-[#FAF7F2]/85"],
+  [class~="text-[#FAF7F2]/90"]
+) {
+  color: #faf7f2;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgb(56 14 28 / 12%);
+}
+
+:where(button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid #a77e2c;
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  scroll-margin-top: 6rem;
+  text-wrap: balance;
+}
+
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  button {
+    min-height: 44px;
+    min-width: 44px;
   }
 }
 
@@ -60,8 +291,102 @@
   animation-play-state: paused;
 }
 
+.animate-marquee-paused {
+  animation-play-state: paused;
+}
+
+/* Fade-in for toasts */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* Honor prefers-reduced-motion: disable non-essential animations */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  .animate-marquee,
+  .animate-fade-in {
+    animation: none;
+  }
+
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 body {
   text-align: left;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 359px) {
+  .header-inner {
+    padding-inline: 0.5rem;
+  }
+
+  .header-brand {
+    gap: 0.125rem;
+  }
+
+  .header-menu-trigger {
+    width: 2.5rem;
+    min-width: 2.5rem;
+  }
+
+  .header-wordmark {
+    font-size: 0.9375rem;
+    letter-spacing: 0.025em;
+  }
+
+  .header-tagline {
+    font-size: 6px;
+    letter-spacing: 0.06em;
+  }
+
+  .header-actions {
+    gap: 0.25rem;
+  }
+
+  .mobile-header-action {
+    width: 2.25rem;
+    min-width: 2.25rem;
+    height: 2.5rem;
+  }
+
+  .mobile-header-action::before {
+    position: absolute;
+    inset: -0.25rem;
+    content: "";
+  }
+
+  .mobile-header-action > svg,
+  .mobile-header-action > span {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+@media (min-width: 360px) and (max-width: 374px) {
+  .header-wordmark {
+    font-size: 1rem;
+    letter-spacing: 0.045em;
+  }
 }
 
 @media print {

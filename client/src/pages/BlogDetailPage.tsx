@@ -3,6 +3,7 @@ import { useShop } from '../context/ShopContext';
 import { BLOG_POSTS, PRODUCTS } from '@shared/data/mockData';
 import { ArrowLeft, Sparkles, Clock, Calendar, User, ArrowRight } from 'lucide-react';
 import { ProductCard } from '../components/common/ProductCard';
+import { handleInternalLinkClick } from '../utils/navigation';
 
 interface BlogDetailPageProps {
   slug: string;
@@ -20,13 +21,14 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ slug }) => {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
       {/* Back Button */}
-      <button
-        onClick={() => navigateTo('blog')}
-        className="flex items-center gap-2 text-xs font-medium text-[#4A1525]/70 hover:text-[#2A0814] transition-colors cursor-pointer"
+      <a
+        href="/blog"
+        onClick={(event) => handleInternalLinkClick(event, () => navigateTo('blog'))}
+        className="inline-flex min-h-11 items-center gap-2 text-xs font-medium text-[#4A1525]/70 transition-colors hover:text-[#2A0814]"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>Return to Journal</span>
-      </button>
+      </a>
 
       {/* Article Header */}
       <header className="space-y-4">
@@ -70,6 +72,8 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ slug }) => {
         <img
           src={post.coverImage}
           alt={post.title}
+          width={1200}
+          height={750}
           referrerPolicy="no-referrer"
           className="w-full h-full object-cover"
         />
@@ -104,12 +108,13 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ slug }) => {
             <h3 className="font-serif text-2xl font-medium text-[#2A0814]">
               Featured Jewellery in this Story
             </h3>
-            <button
-              onClick={() => navigateTo('shop')}
-              className="text-xs font-semibold text-[#C49A45] hover:underline"
+            <a
+              href="/shop"
+              onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop'))}
+              className="inline-flex min-h-11 items-center text-xs font-semibold text-[#A77E2C] hover:underline"
             >
               Shop Collection
-            </button>
+            </a>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

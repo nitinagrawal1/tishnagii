@@ -175,7 +175,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ order, onBack }) => 
             <Printer className="h-4 w-4" /> Print Invoice
           </button>
           <button disabled={isDownloading} onClick={() => void downloadInvoice()} className="inline-flex items-center gap-2 bg-[#2A0814] px-4 py-2.5 text-sm text-[#FAF7F2] transition-colors hover:bg-[#380E1C] disabled:opacity-60">
-            {isDownloading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download Invoice
+            {isDownloading ? <span aria-hidden="true" className="inline-flex animate-spin"><RefreshCw className="h-4 w-4" /></span> : <Download className="h-4 w-4" />} Download Invoice
           </button>
         </div>
       </div>

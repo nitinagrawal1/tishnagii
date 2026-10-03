@@ -2,6 +2,7 @@ import React from 'react';
 import { useShop } from '../context/ShopContext';
 import { CATEGORIES } from '@shared/data/mockData';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { handleInternalLinkClick } from '../utils/navigation';
 
 export const CategoriesPage: React.FC = () => {
   const { navigateTo } = useShop();
@@ -23,17 +24,22 @@ export const CategoriesPage: React.FC = () => {
 
       {/* Categories Grid (Asymmetrical / Editorial aesthetic) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {CATEGORIES.map((category) => (
-          <div
+        {CATEGORIES.map((category, index) => (
+          <a
             key={category.id}
-            onClick={() => navigateTo('shop', undefined, category.id)}
-            className="group cursor-pointer bg-[#FAF7F2] border border-[#EADBCE] rounded-xs overflow-hidden flex flex-col justify-between hover:border-[#C49A45] hover:shadow-lg transition-all duration-300"
+            href={`/shop?category=${encodeURIComponent(category.id)}`}
+            onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop', undefined, category.id))}
+            className="group flex min-w-0 cursor-pointer flex-col justify-between overflow-hidden rounded-xs border border-[#EADBCE] bg-[#FAF7F2] transition-[border-color,box-shadow] duration-300 hover:border-[#C49A45] hover:shadow-lg"
           >
             {/* Visual Container */}
             <div className="relative aspect-4/3 overflow-hidden bg-[#F4EFEA]">
               <img
                 src={category.image}
                 alt={category.name}
+                width={800}
+                height={600}
+                loading={index < 3 ? 'eager' : 'lazy'}
+                fetchPriority={index < 3 ? 'high' : 'auto'}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
@@ -66,10 +72,10 @@ export const CategoriesPage: React.FC = () => {
 
               <div className="pt-6 mt-4 border-t border-[#EADBCE] flex items-center justify-between text-xs font-semibold text-[#2A0814] group-hover:text-[#C49A45] transition-colors">
                 <span>Explore This Suite</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
+                <span className="transition-transform group-hover:translate-x-1.5"><ArrowRight className="w-4 h-4" /></span>
               </div>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </div>

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
-import { Check, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
+import { handleInternalLinkClick } from '../utils/navigation';
+import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
 
 export const ContactPage: React.FC = () => {
   const { showToast, navigateTo } = useShop();
@@ -14,18 +16,36 @@ export const ContactPage: React.FC = () => {
   const [acceptPrivacy, setAcceptPrivacy] = useState(true);
   const [subscribeNewsletter, setSubscribeNewsletter] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { markClean } = useUnsavedChanges(
+    !isSubmitted && Boolean(
+      firstName || lastName || email || phone || message || !acceptPrivacy || subscribeNewsletter,
+    ),
+    'contact-draft',
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
-      showToast('Please provide your name and email address', 'error');
-      return;
-    }
-    if (!acceptPrivacy) {
-      showToast('Please accept the Privacy Policy to proceed', 'error');
+    const nextErrors: Record<string, string> = {};
+    if (!firstName.trim()) nextErrors.firstName = 'Enter your first name.';
+    if (!lastName.trim()) nextErrors.lastName = 'Enter your last name.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) nextErrors.email = 'Enter a valid email address.';
+    if (!message.trim()) nextErrors.message = 'Enter a message for the concierge.';
+    if (!acceptPrivacy) nextErrors.acceptPrivacy = 'Accept the Privacy Policy to send your inquiry.';
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      requestAnimationFrame(() => {
+        document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+      });
       return;
     }
 
+    setFirstName(firstName.trim());
+    setLastName(lastName.trim());
+    setEmail(email.trim());
+    setPhone(phone.trim());
+    setMessage(message.trim());
+    markClean();
     setIsSubmitted(true);
     showToast('Your message has been received by our Jaipur Concierge.');
   };
@@ -76,13 +96,17 @@ export const ContactPage: React.FC = () => {
             </p>
             <div className="pt-4">
               <button
+                type="button"
                 onClick={() => {
+                  markClean();
                   setIsSubmitted(false);
                   setFirstName('');
                   setLastName('');
                   setEmail('');
                   setPhone('');
                   setMessage('');
+                  setAcceptPrivacy(true);
+                  setSubscribeNewsletter(false);
                 }}
                 className="py-3 px-6 border border-dashed border-[#FAF7F2]/40 hover:border-[#D4AE58] text-xs uppercase tracking-widest text-[#FAF7F2] hover:text-[#D4AE58] transition-colors rounded-xs cursor-pointer"
               >
@@ -91,64 +115,84 @@ export const ContactPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-7 max-w-2xl">
+          <form noValidate onSubmit={handleSubmit} className="space-y-6 sm:space-y-7 max-w-2xl">
             
             {/* ROW 1: First name* / Last name* */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
-                <label className="block text-xs sm:text-[13px] text-[#FAF7F2]/90 font-light">
+                <label htmlFor="contact-first-name" className="block text-xs sm:text-[13px] text-[#FAF7F2]/90 font-light">
                   First name*
                 </label>
                 <input
                   type="text"
-                  required
+                  id="contact-first-name"
+                  name="given-name"
+                  autoComplete="given-name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Enter first name"
+                  placeholder="e.g. Radhika…"
+                  aria-invalid={!!errors.firstName}
+                  aria-describedby={errors.firstName ? 'contact-first-name-error' : undefined}
                   className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs px-4 py-3.5 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] transition-colors"
                 />
+                {errors.firstName && <p id="contact-first-name-error" className="text-xs text-[#FFD6D6]" aria-live="polite">{errors.firstName}</p>}
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs sm:text-[13px] text-[#FAF7F2]/90 font-light">
+                <label htmlFor="contact-last-name" className="block text-xs sm:text-[13px] text-[#FAF7F2]/90 font-light">
                   Last name*
                 </label>
                 <input
                   type="text"
-                  required
+                  id="contact-last-name"
+                  name="family-name"
+                  autoComplete="family-name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Enter last name"
+                  placeholder="e.g. Mehta…"
+                  aria-invalid={!!errors.lastName}
+                  aria-describedby={errors.lastName ? 'contact-last-name-error' : undefined}
                   className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs px-4 py-3.5 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] transition-colors"
                 />
+                {errors.lastName && <p id="contact-last-name-error" className="text-xs text-[#FFD6D6]" aria-live="polite">{errors.lastName}</p>}
               </div>
             </div>
 
             {/* ROW 2: E-mail address* / Phone number (optional) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
-                <label className="block text-xs sm:text-[13px] text-[#FAF7F2]/90 font-light">
+                <label htmlFor="contact-email" className="block text-xs sm:text-[13px] text-[#FAF7F2]/90 font-light">
                   E-mail address*
                 </label>
                 <input
                   type="email"
-                  required
+                  id="contact-email"
+                  name="email"
+                  autoComplete="email"
+                  spellCheck={false}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter e-mail address"
+                  placeholder="name@domain.com…"
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? 'contact-email-error' : undefined}
                   className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs px-4 py-3.5 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] transition-colors"
                 />
+                {errors.email && <p id="contact-email-error" className="text-xs text-[#FFD6D6]" aria-live="polite">{errors.email}</p>}
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs sm:text-[13px] text-[#FAF7F2]/90 font-light">
+                <label htmlFor="contact-phone" className="block text-xs sm:text-[13px] text-[#FAF7F2]/90 font-light">
                   Phone number (optional)
                 </label>
                 <input
                   type="tel"
+                  id="contact-phone"
+                  name="tel"
+                  autoComplete="tel"
+                  inputMode="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="(123) 456-7890"
+                  placeholder="e.g. +91 98200 12345…"
                   className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs px-4 py-3.5 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] transition-colors"
                 />
               </div>
@@ -156,60 +200,63 @@ export const ContactPage: React.FC = () => {
 
             {/* ROW 3: Message */}
             <div className="space-y-2">
-              <label className="block text-xs sm:text-[13px] text-[#FAF7F2]/90 font-light">
+              <label htmlFor="contact-message" className="block text-xs sm:text-[13px] text-[#FAF7F2]/90 font-light">
                 Message
               </label>
               <textarea
                 rows={5}
-                required
+                id="contact-message"
+                name="message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Enter message"
+                onKeyDown={(event) => {
+                  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+                    event.preventDefault();
+                    event.currentTarget.form?.requestSubmit();
+                  }
+                }}
+                placeholder="Tell us how we can help…"
+                aria-invalid={!!errors.message}
+                aria-describedby={errors.message ? 'contact-message-error' : undefined}
                 className="w-full bg-[#2F0B18] border border-[#4A1527] focus:border-[#C49A45] rounded-xs p-4 text-xs sm:text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] transition-colors resize-y min-h-[140px]"
               />
+              {errors.message && <p id="contact-message-error" className="text-xs text-[#FFD6D6]" aria-live="polite">{errors.message}</p>}
             </div>
 
             {/* ROW 4: Checkboxes matching reference design */}
             <div className="space-y-3 pt-1">
               {/* Checkbox 1: Privacy Policy */}
-              <label className="flex items-center gap-3 cursor-pointer select-none text-xs sm:text-sm text-[#FAF7F2]/85 font-light">
-                <div 
-                  onClick={() => setAcceptPrivacy(!acceptPrivacy)}
-                  className={`w-4 h-4 rounded-xs border flex items-center justify-center transition-colors cursor-pointer ${
-                    acceptPrivacy 
-                      ? 'bg-[#FAF7F2] border-[#FAF7F2] text-[#230711]' 
-                      : 'border-[#FAF7F2]/40 bg-transparent'
-                  }`}
+              <div className="flex min-h-11 items-center gap-3 text-xs font-light text-[#FAF7F2]/85 sm:text-sm">
+                <input
+                  id="contact-privacy"
+                  name="acceptPrivacy"
+                  type="checkbox"
+                  checked={acceptPrivacy}
+                  onChange={(event) => setAcceptPrivacy(event.target.checked)}
+                  aria-invalid={!!errors.acceptPrivacy}
+                  aria-describedby={errors.acceptPrivacy ? 'contact-privacy-error' : undefined}
+                  className="h-4 w-4 accent-[#D4AE58]"
+                />
+                <label htmlFor="contact-privacy">I have read and accept the Privacy Policy.</label>
+                <a
+                  href="/privacy"
+                  onClick={(event) => handleInternalLinkClick(event, () => navigateTo('privacy'))}
+                  className="min-h-11 inline-flex items-center underline transition-colors hover:text-[#D4AE58]"
                 >
-                  {acceptPrivacy && <Check className="w-3.5 h-3.5 stroke-[2.5]" />}
-                </div>
-                <span>
-                  I have read and accept the{' '}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigateTo('privacy');
-                    }}
-                    className="underline hover:text-[#D4AE58] transition-colors"
-                  >
-                    Privacy Policy
-                  </button>
-                </span>
-              </label>
+                  Read policy
+                </a>
+              </div>
+              {errors.acceptPrivacy && <p id="contact-privacy-error" className="text-xs text-[#FFD6D6]" aria-live="polite">{errors.acceptPrivacy}</p>}
 
               {/* Checkbox 2: Updates */}
-              <label className="flex items-center gap-3 cursor-pointer select-none text-xs sm:text-sm text-[#FAF7F2]/85 font-light">
-                <div 
-                  onClick={() => setSubscribeNewsletter(!subscribeNewsletter)}
-                  className={`w-4 h-4 rounded-xs border flex items-center justify-center transition-colors cursor-pointer ${
-                    subscribeNewsletter 
-                      ? 'bg-[#FAF7F2] border-[#FAF7F2] text-[#230711]' 
-                      : 'border-[#FAF7F2]/40 bg-transparent'
-                  }`}
-                >
-                  {subscribeNewsletter && <Check className="w-3.5 h-3.5 stroke-[2.5]" />}
-                </div>
+              <label className="flex min-h-11 cursor-pointer select-none items-center gap-3 text-xs font-light text-[#FAF7F2]/85 sm:text-sm">
+                <input
+                  name="newsletterUpdates"
+                  type="checkbox"
+                  checked={subscribeNewsletter}
+                  onChange={(event) => setSubscribeNewsletter(event.target.checked)}
+                  className="h-4 w-4 accent-[#D4AE58]"
+                />
                 <span>Stay connected with our latest updates & atelier previews</span>
               </label>
             </div>
@@ -218,7 +265,7 @@ export const ContactPage: React.FC = () => {
             <div className="pt-2">
               <button
                 type="submit"
-                className="w-full py-4 px-6 border border-dashed border-[#FAF7F2]/40 hover:border-[#D4AE58] hover:bg-[#FAF7F2]/5 text-center text-xs sm:text-sm font-light tracking-widest text-[#FAF7F2] hover:text-[#D4AE58] uppercase rounded-xs transition-all cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+                className="min-h-11 w-full cursor-pointer rounded-xs border border-dashed border-[#FAF7F2]/40 px-6 py-4 text-center text-xs font-light uppercase tracking-widest text-[#FAF7F2] transition-[background-color,border-color,color] hover:border-[#D4AE58] hover:bg-[#FAF7F2]/5 hover:text-[#D4AE58] sm:text-sm"
               >
                 Submit
               </button>

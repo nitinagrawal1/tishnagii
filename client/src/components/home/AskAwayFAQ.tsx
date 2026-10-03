@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ASSETS } from '@shared/data/mockData';
 import { Plus, X } from 'lucide-react';
 
@@ -46,12 +46,33 @@ export const ASK_AWAY_FAQS: FAQItemData[] = [
 ];
 
 export const AskAwayFAQ: React.FC = () => {
-  // First item open by default, exactly as shown in reference design
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openIndex, setOpenIndex] = useState<number | null>(() => {
+    const question = new URLSearchParams(window.location.search).get('ask');
+    if (!question) return 0;
+    const index = ASK_AWAY_FAQS.findIndex((faq) => faq.question === question);
+    return index === -1 ? 0 : index;
+  });
 
   const toggleItem = (idx: number) => {
     setOpenIndex(openIndex === idx ? null : idx);
   };
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (openIndex === null) url.searchParams.delete('ask');
+    else url.searchParams.set('ask', ASK_AWAY_FAQS[openIndex].question);
+    window.history.replaceState(window.history.state, '', url);
+  }, [openIndex]);
+
+  useEffect(() => {
+    const restoreOpenItem = () => {
+      const question = new URLSearchParams(window.location.search).get('ask');
+      const index = ASK_AWAY_FAQS.findIndex((faq) => faq.question === question);
+      setOpenIndex(question && index !== -1 ? index : 0);
+    };
+    window.addEventListener('popstate', restoreOpenItem);
+    return () => window.removeEventListener('popstate', restoreOpenItem);
+  }, []);
 
   return (
     <section className="bg-[#1A1416] text-[#FAF7F2] py-20 sm:py-28 overflow-hidden relative">
@@ -89,6 +110,9 @@ export const AskAwayFAQ: React.FC = () => {
                 <img
                   src={ASSETS.askAwayEditorial}
                   alt="Radiant woman laughing joyfully in handcrafted jewellery"
+                  width={900}
+                  height={1200}
+                  loading="lazy"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-700"
                 />
@@ -114,28 +138,36 @@ export const AskAwayFAQ: React.FC = () => {
                 const isOpen = openIndex === idx;
                 return (
                   <div key={idx} className="group">
-                    <button
-                      onClick={() => toggleItem(idx)}
-                      className="w-full py-5 sm:py-6 text-left flex items-start justify-between gap-6 cursor-pointer group-hover:text-[#C49A45] transition-colors"
-                      aria-expanded={isOpen}
-                    >
-                      <span className="font-serif text-base sm:text-lg text-[#FAF7F2] group-hover:text-[#C49A45] transition-colors font-normal leading-relaxed pr-2">
-                        {faq.question}
-                      </span>
-                      
-                      {/* Plus / X Icon exactly as shown in reference design */}
-                      <span className="shrink-0 pt-1 text-white/50 group-hover:text-[#C49A45] transition-colors">
-                        {isOpen ? (
-                          <X className="w-4 h-4 stroke-[1.5]" />
-                        ) : (
-                          <Plus className="w-4 h-4 stroke-[1.5]" />
-                        )}
-                      </span>
-                    </button>
+                    <h3>
+                      <button
+                        id={`ask-away-question-${idx}`}
+                        type="button"
+                        onClick={() => toggleItem(idx)}
+                        className="flex min-h-11 w-full cursor-pointer items-start justify-between gap-6 py-5 text-left transition-colors group-hover:text-[#C49A45] sm:py-6"
+                        aria-expanded={isOpen}
+                        aria-controls={`ask-away-answer-${idx}`}
+                      >
+                        <span className="pr-2 font-serif text-base sm:text-lg text-[#FAF7F2] group-hover:text-[#C49A45] transition-colors font-normal leading-relaxed">
+                          {faq.question}
+                        </span>
+                        <span aria-hidden="true" className="shrink-0 pt-1 text-white/50 group-hover:text-[#C49A45] transition-colors">
+                          {isOpen ? (
+                            <X className="w-4 h-4 stroke-[1.5]" />
+                          ) : (
+                            <Plus className="w-4 h-4 stroke-[1.5]" />
+                          )}
+                        </span>
+                      </button>
+                    </h3>
 
                     {/* Collapsible Answer */}
                     {isOpen && (
-                      <div className="pb-6 sm:pb-7 pr-6 sm:pr-10 text-xs sm:text-sm text-[#FAF7F2]/75 font-light leading-relaxed animate-fade-in">
+                      <div
+                        id={`ask-away-answer-${idx}`}
+                        role="region"
+                        aria-labelledby={`ask-away-question-${idx}`}
+                        className="pb-6 sm:pb-7 pr-6 sm:pr-10 text-xs sm:text-sm text-[#FAF7F2]/75 font-light leading-relaxed animate-fade-in"
+                      >
                         <p>{faq.answer}</p>
                       </div>
                     )}

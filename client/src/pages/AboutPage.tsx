@@ -2,6 +2,7 @@ import React from 'react';
 import { useShop } from '../context/ShopContext';
 import { ASSETS } from '@shared/data/mockData';
 import { Sparkles, Shield, HeartHandshake, Compass, ArrowRight } from 'lucide-react';
+import { handleInternalLinkClick } from '../utils/navigation';
 
 export const AboutPage: React.FC = () => {
   const { navigateTo } = useShop();
@@ -47,6 +48,9 @@ export const AboutPage: React.FC = () => {
               <img
                 src={ASSETS.heroCampaign}
                 alt="TISHNAGII royal adornment aesthetic"
+                width={1200}
+                height={900}
+                loading="lazy"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
               />
@@ -65,6 +69,9 @@ export const AboutPage: React.FC = () => {
                 <img
                   src={ASSETS.artisanCraftsmanship}
                   alt="Jaipur Karigar at work"
+                  width={1200}
+                  height={900}
+                  loading="lazy"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                 />
@@ -86,13 +93,14 @@ export const AboutPage: React.FC = () => {
               </p>
 
               <div className="pt-2">
-                <button
-                  onClick={() => navigateTo('shop')}
-                  className="py-3 px-6 bg-[#C49A45] hover:bg-[#D4AE58] text-[#2A0814] text-xs uppercase tracking-widest font-semibold rounded-xs transition-colors flex items-center gap-2 cursor-pointer"
+                <a
+                  href="/shop"
+                  onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop'))}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-xs bg-[#C49A45] px-6 py-3 text-xs font-semibold uppercase tracking-widest text-[#2A0814] transition-colors hover:bg-[#D4AE58]"
                 >
                   <span>Experience The Craft</span>
                   <ArrowRight className="w-4 h-4" />
-                </button>
+                </a>
               </div>
             </div>
 
