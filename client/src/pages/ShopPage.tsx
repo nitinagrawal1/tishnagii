@@ -140,10 +140,10 @@ export const ShopPage: React.FC = () => {
           type="button"
           onClick={() => setSelectedCategory('all')}
           aria-pressed={selectedCategory === 'all'}
-          className={`min-h-11 shrink-0 snap-start px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-xs transition-colors whitespace-nowrap cursor-pointer ${
+          className={`min-h-11 shrink-0 snap-start rounded-xs border px-4 py-2 text-[13px] font-semibold uppercase tracking-wider transition-colors whitespace-nowrap cursor-pointer ${
             selectedCategory === 'all'
-              ? 'bg-[#2A0814] text-[#FAF7F2]'
-              : 'bg-[#F4EFEA] text-[#2A0814] hover:bg-[#EADBCE]'
+              ? 'border-[#C49A45] bg-[#2A0814] text-[#FAF7F2]'
+              : 'border-transparent bg-[#F4EFEA] text-[#2A0814] hover:bg-[#EADBCE]'
           }`}
         >
           All Jewellery ({PRODUCTS.length})
@@ -154,10 +154,10 @@ export const ShopPage: React.FC = () => {
             key={cat.id}
             onClick={() => setSelectedCategory(cat.id)}
             aria-pressed={selectedCategory === cat.id}
-            className={`min-h-11 shrink-0 snap-start px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-xs transition-colors whitespace-nowrap cursor-pointer ${
+            className={`min-h-11 shrink-0 snap-start rounded-xs border px-4 py-2 text-[13px] font-semibold uppercase tracking-wider transition-colors whitespace-nowrap cursor-pointer ${
               selectedCategory === cat.id
-                ? 'bg-[#2A0814] text-[#FAF7F2]'
-                : 'bg-[#F4EFEA] text-[#2A0814] hover:bg-[#EADBCE]'
+                ? 'border-[#C49A45] bg-[#2A0814] text-[#FAF7F2]'
+                : 'border-transparent bg-[#F4EFEA] text-[#2A0814] hover:bg-[#EADBCE]'
             }`}
           >
             {cat.name}
@@ -186,7 +186,7 @@ export const ShopPage: React.FC = () => {
           {searchFilter && (
             <button
               onClick={() => setSearchFilter('')}
-              className="absolute right-1 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-[10px] text-[#4A1525]/60 hover:text-[#2A0814]"
+              className="absolute right-1 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-xs text-[#4A1525]/70 hover:text-[#2A0814]"
             >
               Clear
             </button>
@@ -196,14 +196,14 @@ export const ShopPage: React.FC = () => {
         {/* Filters & Sorting Group */}
         <div className="flex flex-wrap items-center gap-3">
           {/* Sort By Selector */}
-          <div className="flex items-center gap-1.5 text-xs text-[#2A0814]">
+          <div className="flex items-center gap-1.5 text-sm text-[#2A0814]">
             <span className="text-[#4A1525]/60 hidden sm:inline">Sort:</span>
             <select
               name="sort"
               aria-label="Sort products"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="min-h-11 bg-[#F4EFEA] border border-[#EADBCE] px-3 py-1.5 text-xs text-[#2A0814] rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] cursor-pointer"
+              className="min-h-11 bg-[#F4EFEA] border border-[#EADBCE] px-3 py-1.5 text-sm text-[#2A0814] rounded-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45] cursor-pointer"
             >
               <option value="featured">Featured Suites</option>
               <option value="price-low">Price: Low to High</option>
@@ -214,13 +214,13 @@ export const ShopPage: React.FC = () => {
           </div>
 
           {/* In Stock Only Checkbox */}
-          <label className="flex min-h-11 items-center gap-1.5 text-xs text-[#2A0814] cursor-pointer select-none">
+          <label className="flex min-h-11 items-center gap-2 text-sm text-[#2A0814] cursor-pointer select-none">
             <input
               name="inStock"
               type="checkbox"
               checked={inStockOnly}
               onChange={(e) => setInStockOnly(e.target.checked)}
-              className="accent-[#380E1C] rounded-xs"
+              className="size-5 accent-[#380E1C] rounded-xs"
             />
             <span>In Stock Only</span>
           </label>
@@ -239,6 +239,7 @@ export const ShopPage: React.FC = () => {
       </div>
 
       {/* Active Count & Feedback */}
+      <h2 className="sr-only">Handcrafted jewellery designs</h2>
       <div aria-live="polite" className="flex flex-col gap-1 text-xs text-[#4A1525]/70 font-mono sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <span className="min-w-0">
           Showing <strong className="text-[#2A0814]">{filteredProducts.length}</strong> handcrafted pieces

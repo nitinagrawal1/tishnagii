@@ -355,8 +355,8 @@ body {
   }
 
   .header-tagline {
-    font-size: 6px;
-    letter-spacing: 0.06em;
+    font-size: 7px;
+    letter-spacing: 0.04em;
   }
 
   .header-actions {
@@ -379,6 +379,12 @@ body {
   .mobile-header-action > span {
     position: relative;
     z-index: 1;
+  }
+}
+
+@media (max-width: 374px) {
+  .header-tagline-detail {
+    display: none;
   }
 }
 

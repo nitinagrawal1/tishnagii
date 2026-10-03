@@ -143,14 +143,22 @@ export const AskAwayFAQ: React.FC = () => {
                         id={`ask-away-question-${idx}`}
                         type="button"
                         onClick={() => toggleItem(idx)}
-                        className="flex min-h-11 w-full cursor-pointer items-start justify-between gap-6 py-5 text-left transition-colors group-hover:text-[#C49A45] sm:py-6"
+                        className={`flex min-h-11 w-full cursor-pointer items-start justify-between gap-6 border-l-2 py-4 pl-4 pr-2 text-left transition-colors sm:py-5 ${
+                          isOpen
+                            ? 'border-[#C49A45] bg-white/5'
+                            : 'border-transparent hover:border-white/30 hover:bg-white/[0.03]'
+                        }`}
                         aria-expanded={isOpen}
                         aria-controls={`ask-away-answer-${idx}`}
                       >
-                        <span className="pr-2 font-serif text-base sm:text-lg text-[#FAF7F2] group-hover:text-[#C49A45] transition-colors font-normal leading-relaxed">
+                        <span className={`min-w-0 pr-2 font-serif text-base font-normal leading-relaxed transition-colors sm:text-lg ${
+                          isOpen ? 'text-[#F7EFCF]' : 'text-[#FAF7F2] group-hover:text-[#F7EFCF]'
+                        }`}>
                           {faq.question}
                         </span>
-                        <span aria-hidden="true" className="shrink-0 pt-1 text-white/50 group-hover:text-[#C49A45] transition-colors">
+                        <span aria-hidden="true" className={`shrink-0 pt-1 transition-colors ${
+                          isOpen ? 'text-[#F7EFCF]' : 'text-white/70 group-hover:text-[#F7EFCF]'
+                        }`}>
                           {isOpen ? (
                             <X className="w-4 h-4 stroke-[1.5]" />
                           ) : (
@@ -166,7 +174,7 @@ export const AskAwayFAQ: React.FC = () => {
                         id={`ask-away-answer-${idx}`}
                         role="region"
                         aria-labelledby={`ask-away-question-${idx}`}
-                        className="pb-6 sm:pb-7 pr-6 sm:pr-10 text-xs sm:text-sm text-[#FAF7F2]/75 font-light leading-relaxed animate-fade-in"
+                        className="pb-5 pl-4 pr-6 text-sm font-light leading-relaxed text-[#FAF7F2]/90 sm:pb-6 sm:pr-10 animate-fade-in"
                       >
                         <p>{faq.answer}</p>
                       </div>

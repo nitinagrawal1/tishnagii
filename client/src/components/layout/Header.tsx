@@ -101,8 +101,8 @@ export const Header: React.FC = () => {
               <span translate="no" className="header-wordmark whitespace-nowrap font-serif text-lg font-medium leading-tight tracking-[0.08em] text-[#2A0814] transition-colors group-hover:text-[#4A1525] sm:text-3xl sm:tracking-[0.22em]">
                 TISHNAGII
               </span>
-              <span className="header-tagline -mt-0.5 whitespace-nowrap text-[7px] font-light tracking-[0.1em] text-[#C49A45] sm:text-[10px] sm:tracking-[0.3em]">
-                तिश्नगी · ARTISANAL LUXURY
+              <span translate="no" className="header-tagline -mt-0.5 whitespace-nowrap text-[8px] font-light tracking-[0.08em] text-[#C49A45] sm:text-[10px] sm:tracking-[0.3em]">
+                तिश्नगी · <span className="header-tagline-detail">ARTISANAL </span>LUXURY
               </span>
             </a>
           </div>

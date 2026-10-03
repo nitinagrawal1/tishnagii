@@ -20,7 +20,7 @@ export const Footer: React.FC = () => {
     }
     setNewsletterError('');
     setIsSubscribed(true);
-    showToast('Welcome to the TISHNAGII Gazette! Check your inbox for your 10% welcome code.');
+    showToast('Welcome to the TISHNAGII Gazette. Check your inbox for your 10% welcome code.');
     setNewsletterEmail('');
   };
 
@@ -29,14 +29,15 @@ export const Footer: React.FC = () => {
       {/* Trust & Craftsmanship Bar */}
       <div className="border-b border-[#380E1C]/80 py-8 bg-[#230611]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="sr-only">TISHNAGII service promises</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center md:text-left">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-[#380E1C] border border-[#C49A45]/30 flex items-center justify-center shrink-0 text-[#C49A45]">
                 <Truck className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-serif tracking-wide text-[#FAF7F2]">Insured Express Delivery</h4>
-                <p className="text-xs text-[#FAF7F2]/60 mt-0.5">Complimentary pan-India over <span className="tabular-nums">₹1,499</span></p>
+                <h3 className="text-sm font-serif tracking-wide text-[#FAF7F2]">Insured Express Delivery</h3>
+                <p className="mt-0.5 text-sm text-[#FAF7F2]/80">Complimentary pan-India over <span className="tabular-nums">₹1,499</span></p>
               </div>
             </div>
 
@@ -45,8 +46,8 @@ export const Footer: React.FC = () => {
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-serif tracking-wide text-[#FAF7F2]">22K Antique Micron Gold</h4>
-                <p className="text-xs text-[#FAF7F2]/60 mt-0.5">Electro-shielded anti-tarnish finish</p>
+                <h3 className="text-sm font-serif tracking-wide text-[#FAF7F2]">22K Antique Micron Gold</h3>
+                <p className="mt-0.5 text-sm text-[#FAF7F2]/80">Electro-shielded anti-tarnish finish</p>
               </div>
             </div>
 
@@ -55,8 +56,8 @@ export const Footer: React.FC = () => {
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-serif tracking-wide text-[#FAF7F2]">100% Hypoallergenic</h4>
-                <p className="text-xs text-[#FAF7F2]/60 mt-0.5">Lead, nickel & cadmium-free brass core</p>
+                <h3 className="text-sm font-serif tracking-wide text-[#FAF7F2]">100% Hypoallergenic</h3>
+                <p className="mt-0.5 text-sm text-[#FAF7F2]/80">Lead, nickel & cadmium-free brass core</p>
               </div>
             </div>
 
@@ -65,8 +66,8 @@ export const Footer: React.FC = () => {
                 <RefreshCw className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-serif tracking-wide text-[#FAF7F2]">7-Day Doorstep Returns</h4>
-                <p className="text-xs text-[#FAF7F2]/60 mt-0.5">Hassle-free reverse pick-up</p>
+                <h3 className="text-sm font-serif tracking-wide text-[#FAF7F2]">7-Day Doorstep Returns</h3>
+                <p className="mt-0.5 text-sm text-[#FAF7F2]/80">Hassle-free reverse pick-up</p>
               </div>
             </div>
           </div>
@@ -75,6 +76,7 @@ export const Footer: React.FC = () => {
 
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h2 className="sr-only">Explore TISHNAGII</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
           
           {/* Brand Story Column (2 cols wide on desktop) */}
@@ -109,9 +111,9 @@ export const Footer: React.FC = () => {
 
           {/* Collections Column */}
           <div className="space-y-3">
-            <h4 className="text-xs uppercase tracking-widest text-[#C49A45] font-semibold">
+            <h3 className="text-xs uppercase tracking-widest text-[#C49A45] font-semibold">
               Collections
-            </h4>
+            </h3>
             <ul className="space-y-2 text-sm text-[#FAF7F2]/80">
               <li>
                 <a href="/shop?category=necklaces" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('shop', undefined, 'necklaces'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
@@ -148,9 +150,9 @@ export const Footer: React.FC = () => {
 
           {/* Customer Care Column */}
           <div className="space-y-3">
-            <h4 className="text-xs uppercase tracking-widest text-[#C49A45] font-semibold">
+            <h3 className="text-xs uppercase tracking-widest text-[#C49A45] font-semibold">
               Customer Care
-            </h4>
+            </h3>
             <ul className="space-y-2 text-sm text-[#FAF7F2]/80">
               <li>
                 <a href="/contact" onClick={(event) => handleInternalLinkClick(event, () => navigateTo('contact'))} className="hover:text-[#FAF7F2] hover:underline transition-colors text-left">
@@ -187,17 +189,17 @@ export const Footer: React.FC = () => {
 
           {/* Newsletter Column */}
           <div className="space-y-3">
-            <h4 className="text-xs uppercase tracking-widest text-[#C49A45] font-semibold">
+            <h3 className="text-xs uppercase tracking-widest text-[#C49A45] font-semibold">
               The Gazette
-            </h4>
-            <p className="text-xs text-[#FAF7F2]/70 leading-relaxed">
+            </h3>
+            <p className="text-sm text-[#FAF7F2]/80 leading-relaxed">
               Subscribe to receive private preview invitations to rare limited-batch editions and receive 10% off your inaugural order.
             </p>
 
             {isSubscribed ? (
-              <div className="flex items-center gap-2 p-3 bg-[#380E1C] border border-[#C49A45]/40 rounded text-xs text-[#FAF7F2]">
+              <div className="flex items-center gap-2 p-3 bg-[#380E1C] border border-[#C49A45]/40 rounded text-sm text-[#FAF7F2]" role="status">
                 <CheckCircle2 className="w-4 h-4 text-[#C49A45]" />
-                <span>You are subscribed. Use code <strong>ROYAL10</strong> at checkout!</span>
+                <span>You are subscribed. Use code <strong>ROYAL10</strong> at checkout.</span>
               </div>
             ) : (
               <form noValidate onSubmit={handleSubscribe} className="space-y-2">
@@ -218,12 +220,12 @@ export const Footer: React.FC = () => {
                     aria-label="Email for newsletter"
                     aria-invalid={Boolean(newsletterError)}
                     aria-describedby={newsletterError ? 'newsletter-email-error' : undefined}
-                    className="w-full bg-[#1B060D] border border-[#380E1C] px-3 py-2 text-xs text-[#FAF7F2] placeholder-[#FAF7F2]/40 rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
+                    className="min-h-12 w-full bg-[#1B060D] border border-[#380E1C] px-3 py-2 pr-14 text-sm text-[#FAF7F2] placeholder-[#FAF7F2]/60 rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A45] focus:border-[#C49A45]"
                   />
                   <button
                     type="submit"
                     aria-label="Subscribe to newsletter"
-                    className="absolute right-1 top-1 bottom-1 px-3 bg-[#C49A45] text-[#2A0814] font-medium text-xs rounded hover:bg-[#D4AE58] transition-colors flex items-center cursor-pointer touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+                    className="absolute right-1 top-1 bottom-1 flex min-h-11 min-w-11 cursor-pointer touch-manipulation items-center justify-center rounded bg-[#C49A45] px-3 font-medium text-xs text-[#2A0814] transition-colors hover:bg-[#D4AE58]"
                   >
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
@@ -233,7 +235,7 @@ export const Footer: React.FC = () => {
                     {newsletterError}
                   </p>
                 )}
-                <span className="text-[11px] text-[#FAF7F2]/50 block">
+                <span className="block text-xs text-[#FAF7F2]/70">
                   We respect your privacy. Zero spam ever.
                 </span>
               </form>
@@ -259,7 +261,7 @@ export const Footer: React.FC = () => {
             </a>
           </div>
 
-          <div className="text-[11px] text-[#FAF7F2]/60">
+          <div className="text-xs text-[#FAF7F2]/80">
             Handcrafted with Pride in Jaipur, India
           </div>
         </div>

@@ -7,6 +7,48 @@ import { BoldGraphicHero } from '../components/home/BoldGraphicHero';
 import { ArrowRight } from 'lucide-react';
 import { handleInternalLinkClick } from '../utils/navigation';
 
+const patronTestimonials = [
+  {
+    name: 'Amelia',
+    occasion: 'Destination Wedding',
+    image: ASSETS.patronSangeet,
+    imageAlt: 'Tishnagii patron wearing a Kundan necklace at a wedding',
+    quotes: [
+      'These should be staple for every Indian wedding guest.',
+      'They actually look and feel like 22K ancestral gold. The polki lustre is so soft and candlelit, you might mistake them for family heirlooms yourself.',
+    ],
+  },
+  {
+    name: 'Hamna',
+    occasion: 'Sangeet Night',
+    image: ASSETS.patronTempleJhumka,
+    imageAlt: 'Tishnagii patron wearing temple jhumkas',
+    quotes: [
+      'I have the hardest time wearing heavy artificial sets without allergic itching. It’s like my skin can smell nickel and immediately flares up.',
+      'I love my Tishnagii pieces though! Danced 5 hours at the Sangeet with zero pinching or redness. The silicone cushions on the jhumkas are pure magic.',
+    ],
+  },
+  {
+    name: 'Dior',
+    occasion: 'Jaipur Heritage',
+    image: ASSETS.patronEmerald,
+    imageAlt: 'Tishnagii patron dressed in an emerald bridal suite',
+    quotes: [
+      'Dior will perform acts and tricks for these jewels! The weight feels so substantial yet balanced, and the meenakari on the reverse is immaculate.',
+    ],
+  },
+  {
+    name: 'Sylo',
+    occasion: 'Royal Bride',
+    image: ASSETS.patronFestiveKadas,
+    imageAlt: 'Tishnagii patron wearing festive kadas',
+    quotes: [
+      'My family absolutely loves Tishnagii! As soon as the package arrived, my mother ran over with her magnifying glass.',
+      "They're clearly one of my all-time favorites, and I love knowing I'm wearing hypoallergenic pieces that look so regal in our wedding portraits. Definitely a staple in our house!",
+    ],
+  },
+];
+
 export const HomePage: React.FC = () => {
   const { navigateTo } = useShop();
 
@@ -61,7 +103,7 @@ export const HomePage: React.FC = () => {
                 <h3 className="font-serif text-sm font-medium text-[#2A0814] group-hover:text-[#4A1525] break-words">
                   {cat.name}
                 </h3>
-                <span className="text-[10px] text-[#4A1525]/60 mt-0.5 block font-mono tabular-nums">
+                <span className="mt-0.5 block text-xs font-mono tabular-nums text-[#4A1525]/70">
                   {cat.itemCount} Designs
                 </span>
               </div>
@@ -118,7 +160,7 @@ export const HomePage: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2A0814]/80 via-transparent to-transparent pointer-events-none" />
                 <div className="absolute bottom-4 left-4 text-xs text-[#FAF7F2]/90">
                   <span className="font-serif text-sm block">Hand Taksal & Meenakari Enamelling</span>
-                  <span className="text-[10px] text-[#D4AE58]">Johari Bazaar Workshop, Jaipur</span>
+                  <span className="text-xs text-[#F7EFCF]">Johari Bazaar Workshop, Jaipur</span>
                 </div>
               </div>
             </div>
@@ -141,15 +183,15 @@ export const HomePage: React.FC = () => {
               <div className="grid grid-cols-3 gap-4 pt-4 border-t border-[#380E1C] text-center font-mono">
                 <div>
                   <span className="text-2xl font-serif text-[#D4AE58] block">400+</span>
-                  <span className="text-[10px] text-[#FAF7F2]/60 uppercase tracking-wider">Years of Craft Heritage</span>
+                  <span className="text-xs text-[#FAF7F2]/80 uppercase tracking-wider">Years of Craft Heritage</span>
                 </div>
                 <div>
                   <span className="text-2xl font-serif text-[#D4AE58] block">22K</span>
-                  <span className="text-[10px] text-[#FAF7F2]/60 uppercase tracking-wider">Micron Gold Finish</span>
+                  <span className="text-xs text-[#FAF7F2]/80 uppercase tracking-wider">Micron Gold Finish</span>
                 </div>
                 <div>
                   <span className="text-2xl font-serif text-[#D4AE58] block">100%</span>
-                  <span className="text-[10px] text-[#FAF7F2]/60 uppercase tracking-wider">Nickel & Lead Free</span>
+                  <span className="text-xs text-[#FAF7F2]/80 uppercase tracking-wider">Nickel & Lead Free</span>
                 </div>
               </div>
 
@@ -199,7 +241,7 @@ export const HomePage: React.FC = () => {
 
       {/* 6. Instagram Community Testimonials (@tishnagii) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#181517] text-white rounded-[24px] sm:rounded-[32px] p-6 sm:p-8 md:p-10 shadow-2xl border border-white/5 space-y-6 sm:space-y-8">
+        <div className="rounded-2xl border border-white/10 bg-[#181517] p-5 text-white shadow-2xl sm:rounded-3xl sm:p-8 md:p-10 space-y-6 sm:space-y-8">
           
           {/* Header Bar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-white/10">
@@ -229,10 +271,10 @@ export const HomePage: React.FC = () => {
               </div>
 
               <div>
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white group-hover:text-[#C49A45] transition-colors flex items-center gap-2">
+                <h2 className="min-w-0 break-words text-xl font-bold tracking-tight text-white transition-colors group-hover:text-[#C49A45] flex items-center gap-2 sm:text-2xl md:text-3xl">
                   Follow us @tishnagii
                 </h2>
-                <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-[#C49A45] font-semibold">
+                <p className="text-xs uppercase tracking-[0.18em] text-[#C49A45] font-semibold sm:tracking-[0.25em]">
                   REAL PATRONS. REAL OPINIONS.
                 </p>
               </div>
@@ -243,142 +285,46 @@ export const HomePage: React.FC = () => {
             </p>
           </div>
 
-          {/* 2x5 Grid of Testimonials & Patron Moments */}
-          <div className="grid grid-rows-2 grid-flow-col auto-cols-[230px] sm:auto-cols-[260px] lg:grid-rows-none lg:grid-flow-row lg:grid-cols-5 gap-3.5 sm:gap-4 overflow-x-auto pb-4 lg:pb-0 scrollbar-none">
-            
-            {/* ROW 1: Card 1 - Anchor Terracotta Brand Card */}
-            <div className="bg-[#C73D14] text-white rounded-[20px] p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden aspect-[3/4] select-none shadow-sm">
-              <span className="font-serif font-bold text-xl sm:text-2xl tracking-normal text-white">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="flex min-h-72 flex-col justify-between rounded-2xl bg-[#C73D14] p-6 text-white shadow-sm sm:min-h-0">
+              <span translate="no" className="font-serif text-2xl font-bold tracking-normal">
                 tishnagii
               </span>
-              <div className="absolute bottom-6 left-16 origin-bottom-left -rotate-90 sm:left-18 lg:bottom-4 lg:left-20">
-                <p className="font-sans font-bold text-3xl sm:text-4xl lg:text-[40px] leading-[0.88] tracking-tight text-white whitespace-nowrap">
-                  Real<br />feedback.
-                </p>
-              </div>
+              <p className="font-sans text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
+                Real feedback.
+              </p>
             </div>
 
-            {/* ROW 1: Card 2 - Patron Photo 1 */}
-            <div className="rounded-[20px] overflow-hidden aspect-[3/4] bg-[#2A0814] shadow-sm">
-              <img
-                src={ASSETS.patronSangeet}
-                alt="Tishnagii patron wearing Kundan necklace at a wedding"
-                width={600}
-                height={800}
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-              />
-            </div>
+            {patronTestimonials.map((testimonial) => (
+              <article key={testimonial.name} className="min-w-0 overflow-hidden rounded-2xl bg-white text-[#1C1819] shadow-sm">
+                <figure className="flex h-full flex-col">
+                  <div className="aspect-[4/3] overflow-hidden bg-[#2A0814]">
+                    <img
+                      src={testimonial.image}
+                      alt={testimonial.imageAlt}
+                      width={600}
+                      height={450}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                  </div>
+                  <figcaption className="flex flex-1 flex-col p-5 sm:p-6">
+                    <h3 className="text-base font-bold leading-tight text-[#1C1819] sm:text-lg">
+                      {testimonial.name}
+                    </h3>
+                    <p className="mt-1 text-sm font-semibold text-[#4A1525]">
+                      {testimonial.occasion}
+                    </p>
+                    <blockquote className="mt-4 space-y-3 text-sm leading-relaxed text-[#30292A]">
+                      {testimonial.quotes.map((quote) => <p key={quote}>{quote}</p>)}
+                    </blockquote>
+                  </figcaption>
+                </figure>
+              </article>
+            ))}
 
-            {/* ROW 1: Card 3 - White Quote Card 1 (Amelia) */}
-            <div className="bg-white text-[#1C1819] rounded-[20px] p-5 sm:p-6 flex flex-col justify-start shadow-sm">
-              <h3 className="font-sans font-bold text-base sm:text-lg text-black leading-tight">
-                Amelia<br />
-                <span className="text-xs sm:text-sm font-semibold text-black/70">(Destination Wedding)</span>
-              </h3>
-              <div className="mt-4 space-y-2.5 text-xs sm:text-[13px] text-black/85 leading-relaxed">
-                <p>These should be staple for every Indian wedding guest.</p>
-                <p>They actually look and feel like 22K ancestral gold. The polki lustre is so soft and candlelit, you might mistake them for family heirlooms yourself.</p>
-              </div>
-            </div>
-
-            {/* ROW 1: Card 4 - Patron Photo 2 */}
-            <div className="rounded-[20px] overflow-hidden aspect-[3/4] bg-[#2A0814] shadow-sm">
-              <img
-                src={ASSETS.patronTempleJhumka}
-                alt="Tishnagii patron wearing temple jhumkas"
-                width={600}
-                height={800}
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-
-            {/* ROW 1: Card 5 - White Quote Card 2 (Hamna) */}
-            <div className="bg-white text-[#1C1819] rounded-[20px] p-5 sm:p-6 flex flex-col justify-start shadow-sm">
-              <h3 className="font-sans font-bold text-base sm:text-lg text-black leading-tight">
-                Hamna<br />
-                <span className="text-xs sm:text-sm font-semibold text-black/70">(Sangeet Night)</span>
-              </h3>
-              <div className="mt-3 space-y-2 text-xs sm:text-[12.5px] text-black/85 leading-relaxed">
-                <p>I have the hardest time wearing heavy artificial sets without allergic itching. It’s like my skin can smell nickel and immediately flares up.</p>
-                <p>I love my Tishnagii pieces though! Danced 5 hours at the Sangeet with zero pinching or redness. The silicone cushions on the jhumkas are pure magic.</p>
-              </div>
-            </div>
-
-            {/* ROW 2: Card 6 - Patron Photo 3 */}
-            <div className="rounded-[20px] overflow-hidden aspect-[3/4] bg-[#2A0814] shadow-sm">
-              <img
-                src={ASSETS.patronEmerald}
-                alt="Tishnagii patron dressed in emerald bridal suite"
-                width={600}
-                height={800}
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-
-            {/* ROW 2: Card 7 - White Quote Card 3 (Dior) */}
-            <div className="bg-white text-[#1C1819] rounded-[20px] p-5 sm:p-6 flex flex-col justify-start shadow-sm">
-              <h3 className="font-sans font-bold text-base sm:text-lg text-black leading-tight">
-                Dior<br />
-                <span className="text-xs sm:text-sm font-semibold text-black/70">(Jaipur Heritage)</span>
-              </h3>
-              <div className="mt-4 space-y-2 text-xs sm:text-[13px] text-black/85 leading-relaxed">
-                <p>Dior will perform acts and tricks for these jewels! The weight feels so substantial yet balanced, and the meenakari on the reverse is immaculate.</p>
-              </div>
-            </div>
-
-            {/* ROW 2: Card 8 - Patron Photo 4 with Instagram Badge */}
-            <div className="rounded-[20px] overflow-hidden aspect-[3/4] bg-[#2A0814] relative shadow-sm group">
-              <img
-                src={ASSETS.patronFestiveKadas}
-                alt="Tishnagii festive patrons sharing on Instagram"
-                width={600}
-                height={800}
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-black/25 flex flex-col items-center justify-center pointer-events-none">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center shadow-lg">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                  </svg>
-                </div>
-                <span className="text-[10px] tracking-widest text-white font-mono font-bold uppercase mt-2 drop-shadow-md">
-                  @tishnagii
-                </span>
-              </div>
-            </div>
-
-            {/* ROW 2: Card 9 - White Quote Card 4 (Sylo) */}
-            <div className="bg-white text-[#1C1819] rounded-[20px] p-5 sm:p-6 flex flex-col justify-start shadow-sm">
-              <h3 className="font-sans font-bold text-base sm:text-lg text-black leading-tight">
-                Sylo<br />
-                <span className="text-xs sm:text-sm font-semibold text-black/70">(Royal Bride)</span>
-              </h3>
-              <div className="mt-3 space-y-2 text-xs sm:text-[12.5px] text-black/85 leading-relaxed">
-                <p>My family absolutely loves Tishnagii! As soon as the package arrived, my mother ran over with her magnifying glass.</p>
-                <p>They're clearly one of my all-time favorites, and I love knowing I'm wearing hypoallergenic pieces that look so regal in our wedding portraits. Definitely a staple in our house!</p>
-              </div>
-            </div>
-
-            {/* ROW 2: Card 10 - Patron Photo 5 */}
-            <div className="rounded-[20px] overflow-hidden aspect-[3/4] bg-[#2A0814] shadow-sm">
+            <figure className="group relative min-h-72 overflow-hidden rounded-2xl bg-[#2A0814] shadow-sm sm:min-h-0">
               <img
                 src={ASSETS.heroCampaign}
                 alt="Tishnagii bridal patron celebrating"
@@ -386,10 +332,12 @@ export const HomePage: React.FC = () => {
                 height={800}
                 loading="lazy"
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-            </div>
-
+              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#1B060D]/90 to-transparent px-5 pb-5 pt-12 text-sm font-medium text-white">
+                TISHNAGII at the celebration
+              </figcaption>
+            </figure>
           </div>
         </div>
       </section>

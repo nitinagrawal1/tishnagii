@@ -31,9 +31,9 @@ export const PreFooterCTA: React.FC = () => {
 
             {/* Centered Editorial Typography Overlay */}
             <div className="relative z-10 px-4 max-w-3xl mx-auto space-y-4 sm:space-y-5">
-              <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-[72px] font-normal tracking-tight text-[#FAF7F2] leading-[1.08] drop-shadow-md">
+              <h2 className="font-serif text-2xl font-normal tracking-tight text-[#FAF7F2] leading-[1.08] drop-shadow-md sm:text-5xl md:text-6xl lg:text-[72px]">
                 <span>want </span>
-                <span className="italic font-light tracking-wide text-white drop-shadow-sm font-serif">
+                <span translate="no" className="italic font-light tracking-wide text-white drop-shadow-sm font-serif">
                   tishnagii
                 </span>
                 <span> on</span>
@@ -46,7 +46,7 @@ export const PreFooterCTA: React.FC = () => {
                 <a
                   href="/contact"
                   onClick={(event) => handleInternalLinkClick(event, () => navigateTo('contact'))}
-                  className="inline-flex min-h-11 items-center border-b border-dotted border-white/80 pb-1 font-serif text-xs font-light tracking-wider text-[#FAF7F2] transition-colors hover:border-[#D4AE58] hover:text-[#D4AE58] sm:text-sm md:text-base"
+                  className="inline-flex min-h-11 items-center justify-center rounded-xs border border-white/70 bg-[#2A0814]/90 px-5 py-2 font-serif text-sm font-medium tracking-wide text-[#FAF7F2] transition-colors hover:border-[#F7EFCF] hover:bg-[#380E1C] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F7EFCF] sm:text-base"
                 >
                   Wholesale Inquiries
                 </a>
