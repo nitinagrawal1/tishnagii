@@ -6,7 +6,6 @@ import {
   PaymentError,
   verifyRazorpaySignature,
 } from '../server/payment.js';
-import { getAdminAuth, isFirebaseAdminConfigured } from '../server/firebaseAdmin.js';
 import { saveAccountOrder, type OrderCustomer } from '../server/orderHistory.js';
 
 const handler = async (request: VercelRequest, response: VercelResponse) => {
@@ -15,22 +14,28 @@ const handler = async (request: VercelRequest, response: VercelResponse) => {
     return response.status(405).json({ error: 'Method not allowed.' });
   }
 
-  const authorization = request.headers.authorization;
-  const idToken = typeof authorization === 'string' && authorization.startsWith('Bearer ')
-    ? authorization.slice(7)
-    : '';
-  if (!idToken) return response.status(401).json({ error: 'Sign in to complete your payment.' });
-  if (!isFirebaseAdminConfigured()) {
-    return response.status(503).json({ error: 'Authenticated checkout is not configured. Set FIREBASE_SERVICE_ACCOUNT_JSON on the server.' });
-  }
-  let identity: DecodedIdToken;
   try {
-    identity = await getAdminAuth().verifyIdToken(idToken);
-  } catch {
-    return response.status(401).json({ error: 'Your session expired. Sign in again to complete this order.' });
-  }
+    const authorization = request.headers.authorization;
+    const idToken = typeof authorization === 'string' && authorization.startsWith('Bearer ')
+      ? authorization.slice(7)
+      : '';
+    if (!idToken) return response.status(401).json({ error: 'Sign in to complete your payment.' });
+    const { getAdminAuth, isFirebaseAdminConfigured } = await import('../server/firebaseAdmin.js');
+    if (!isFirebaseAdminConfigured()) {
+      return response.status(503).json({ error: 'Authenticated checkout is not configured. Set FIREBASE_SERVICE_ACCOUNT_JSON on the server.' });
+    }
+    let identity: DecodedIdToken;
+    try {
+      identity = await getAdminAuth().verifyIdToken(idToken);
+    } catch (error) {
+      const code = typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : '';
+      if (code.startsWith('auth/')) {
+        return response.status(401).json({ error: 'Your session expired. Sign in again to complete this order.' });
+      }
+      console.error('Unable to verify customer for payment:', error);
+      return response.status(500).json({ error: 'Unable to verify your account for payment. Please try again.' });
+    }
 
-  try {
     const body = request.body && typeof request.body === 'object' ? request.body : {};
     const verified = verifyRazorpaySignature(
       body.razorpay_order_id,
@@ -125,6 +130,9 @@ const handler = async (request: VercelRequest, response: VercelResponse) => {
     const message = error instanceof PaymentError
       ? error.message
       : 'Unable to verify the payment.';
+    if (!(error instanceof PaymentError)) {
+      console.error('Unable to verify Razorpay payment:', error);
+    }
     return response.status(status).json({ error: message });
   }
 };

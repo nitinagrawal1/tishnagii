@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "packageManager": "npm@11.12.1",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "tsx server/dev.ts",
     "build": "vite build",
@@ -43,6 +46,11 @@
     "typescript": "^7.0.2"
   },
   "overrides": {
+    "firebase-admin": {
+      "jwks-rsa": {
+        "jose": "5.10.0"
+      }
+    },
     "@firebase/firestore": {
       "@grpc/grpc-js": "1.13.6"
     },
